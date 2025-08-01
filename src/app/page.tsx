@@ -1,103 +1,112 @@
-import Image from "next/image";
+'use client';
+
+import Link from "next/link";
+import { Button, Card, CardBody, User } from '@heroui/react';
+import { MessageCircle, LogIn, Rocket } from 'lucide-react';
+import { APP_NAME } from '@/utils/env';
 
 export default function Home() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50">
+      <div className="container mx-auto px-4 py-16">
+        {/* Hero区域 */}
+        <div className="text-center mb-20">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-2xl mb-6 shadow-lg">
+            <MessageCircle size={40} className="text-white" />
+          </div>
+          <h1 className="text-6xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent mb-6">
+            欢迎使用{APP_NAME}
+          </h1>
+          <p className="text-xl text-default-600 max-w-2xl mx-auto leading-relaxed">
+            基于 Next.js 15、HeroUI 和 WebSocket 构建的现代化实时聊天应用，为您提供流畅、安全、高效的沟通体验。
+          </p>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        {/* 功能特性区域 */}
+        <div className="max-w-6xl mx-auto mb-20">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-default-800 mb-4">核心功能</h2>
+            <p className="text-default-500">体验现代化的实时通信</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <Card className="border-none bg-white/60 backdrop-blur-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+              <CardBody className="text-center p-8">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-400 to-primary-600 rounded-xl mb-4 mx-auto">
+                  <MessageCircle size={32} className="text-white" />
+                </div>
+                <h3 className="text-xl font-semibold text-default-800 mb-2">实时消息</h3>
+                <p className="text-default-600 text-sm">
+                  基于WebSocket的实时消息传输，毫秒级响应，支持多种消息类型
+                </p>
+              </CardBody>
+            </Card>
+
+            <Card className="border-none bg-white/60 backdrop-blur-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+              <CardBody className="text-center p-8">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-success-400 to-success-600 rounded-xl mb-4 mx-auto">
+                  <User size={32} className="text-white" />
+                </div>
+                <h3 className="text-xl font-semibold text-default-800 mb-2">用户管理</h3>
+                <p className="text-default-600 text-sm">
+                  安全的用户认证系统，支持用户状态管理，提供个性化的使用体验
+                </p>
+              </CardBody>
+            </Card>
+
+            <Card className="border-none bg-white/60 backdrop-blur-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+              <CardBody className="text-center p-8">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-warning-400 to-warning-600 rounded-xl mb-4 mx-auto">
+                  <Rocket size={32} className="text-white" />
+                </div>
+                <h3 className="text-xl font-semibold text-default-800 mb-2">快速部署</h3>
+                <p className="text-default-600 text-sm">
+                  现代化的技术栈，一键部署，支持云端和本地环境，易于扩展
+                </p>
+              </CardBody>
+            </Card>
+          </div>
+        </div>
+
+        {/* CTA区域 */}
+        <div className="text-center">
+          <div className="inline-flex flex-col sm:flex-row gap-4 justify-center">
+            <Button
+              as={Link}
+              href="/register"
+              color="primary"
+              size="lg"
+              variant="shadow"
+              startContent={<Rocket size={20} />}
+              className="min-w-[160px] bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 text-white shadow-xl hover:shadow-2xl transform hover:scale-[1.05] active:scale-[0.95] transition-all duration-300"
+            >
+              立即开始
+            </Button>
+            <Button
+              as={Link}
+              href="/login"
+              color="primary"
+              size="lg"
+              variant="shadow"
+              startContent={<LogIn size={20} />}
+              className="min-w-[160px] bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 text-white shadow-xl hover:shadow-2xl transform hover:scale-[1.05] active:scale-[0.95] transition-all duration-300"
+            >
+              登录体验
+            </Button>
+            <Button
+              as={Link}
+              href="/chat"
+              color="secondary"
+              size="lg"
+              variant="flat"
+              startContent={<MessageCircle size={20} />}
+              className="min-w-[160px] hover:bg-secondary-100 hover:text-secondary-800 transform hover:scale-[1.05] active:scale-[0.95] transition-all duration-300"
+            >
+              立即体验
+            </Button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
