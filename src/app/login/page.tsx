@@ -1,28 +1,26 @@
 'use client';
 
-import {useEffect, useState} from 'react';
+import {useEffect, useState, Suspense} from 'react';
 import {Button, Card, CardBody, CardHeader, Input, Link, Spinner} from '@heroui/react';
 import {User, Lock, MessageCircle} from 'lucide-react';
 import {useRouter, useSearchParams} from 'next/navigation';
 import { observer } from 'mobx-react-lite';
-import { useAuthStore } from '@/stores/StoreProvider';
+import {authStore} from '@/stores/AuthStore';
 import {APP_NAME} from '@/utils/env';
-import {userApi} from '@/utils/api';
+import {userApis} from '@/utils/apis';
 
-
-const LoginPage = observer(() => {
+const LoginForm = observer(() => {
   const [loading, setLoading] = useState(false);
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState<{username?: string; password?: string}>({});
+  const [errors, setErrors] = useState<{email?: string; password?: string}>({});
   const router = useRouter();
   const searchParams = useSearchParams();
-  const authStore = useAuthStore();
   const { isLoggedIn: isAuthenticated } = authStore;
 
   const validateForm = () => {
-    const newErrors: {username?: string; password?: string} = {};
-    if (!username) newErrors.username = '请输入用户名';
+    const newErrors: {email?: string; password?: string} = {};
+    if (!email) newErrors.email = '请输入邮箱';
     if (!password) newErrors.password = '请输入密码';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -34,16 +32,12 @@ const LoginPage = observer(() => {
 
     setLoading(true);
     try {
-      const { token } = await userApi.login({
-        username,
+      const { token } = await userApis.login({
+        email,
         password
       });
-      
-      // 使用MobX store的登录方法
-      localStorage.setItem('token', token);
-      authStore.login(token, {
-        email: username,
-      });
+
+      authStore.token = token;
       
       // 获取之前的路由地址，如果没有则默认跳转到聊天页面
       const returnTo = searchParams.get('returnTo') || '/chat';
@@ -80,14 +74,14 @@ const LoginPage = observer(() => {
           <CardBody className="px-8 pb-8">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-default-700">用户名</label>
+                <label className="text-sm font-medium text-default-700">邮箱</label>
                 <Input
                   type="text"
-                  placeholder="请输入用户名"
-                  value={username}
-                  onValueChange={setUsername}
-                  errorMessage={errors.username}
-                  isInvalid={!!errors.username}
+                  placeholder="请输入邮箱"
+                  value={email}
+                  onValueChange={setEmail}
+                  errorMessage={errors.email}
+                  isInvalid={!!errors.email}
                   startContent={<User className="w-4 h-4 text-default-400" />}
                   variant="bordered"
                   size="lg"
@@ -151,4 +145,12 @@ const LoginPage = observer(() => {
   );
 });
 
-export default LoginPage;
+function LoginPageWithSuspense() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Spinner size="lg" /></div>}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+export default LoginPageWithSuspense;

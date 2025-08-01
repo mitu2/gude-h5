@@ -6,21 +6,7 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
-    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview"
-  },
-  "cloudflare": {
-    "label": "gude-h5",
-    "products": [
-      "Workers"
-    ],
-    "categories": [],
-    "icon_urls": [
-      "https://imagedelivery.net/wSMYJvS3Xw-n339CbDyDIA/5ca0ca32-e897-4699-d4c1-6b680512f000/public"
-    ],
-    "preview_image_url": "https://imagedelivery.net/wSMYJvS3Xw-n339CbDyDIA/e42eec61-db86-49c8-7b29-c3ed4783e400/public",
-    "publish": true
+    "lint": "next lint"
   },
   "dependencies": {
     "@heroui/react": "^2.8.2",
@@ -33,8 +19,6 @@
     "mobx": "^6.13.7",
     "mobx-react-lite": "^4.1.0",
     "next": "15.4.5",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
     "react-toastify": "^11.0.5",
     "sockjs-client": "^1.6.1"
   },

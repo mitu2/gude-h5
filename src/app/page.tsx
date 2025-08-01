@@ -1,9 +1,10 @@
 'use client';
 
 import Link from "next/link";
-import { Button, Card, CardBody, User } from '@heroui/react';
-import { MessageCircle, LogIn, Rocket } from 'lucide-react';
+import { Button, Card, CardBody } from '@heroui/react';
+import { MessageCircle, LogIn, Rocket, User } from 'lucide-react';
 import { APP_NAME } from '@/utils/env';
+import React from "react";
 
 export default function Home() {
   return (
@@ -45,7 +46,7 @@ export default function Home() {
             <Card className="border-none bg-white/60 backdrop-blur-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
               <CardBody className="text-center p-8">
                 <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-success-400 to-success-600 rounded-xl mb-4 mx-auto">
-                  <User size={32} className="text-white" />
+                  <User className="text-white" />
                 </div>
                 <h3 className="text-xl font-semibold text-default-800 mb-2">用户管理</h3>
                 <p className="text-default-600 text-sm">

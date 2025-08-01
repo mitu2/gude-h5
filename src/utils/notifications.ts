@@ -18,7 +18,7 @@ export const toastConfig: NotificationOptions = {
   theme: 'light',
 };
 
-export const notification = {
+export const notifications = {
   success: (message: string, options?: NotificationOptions) => {
     toast.success(message, { ...toastConfig, ...options });
   },
@@ -58,4 +58,4 @@ export const notification = {
   },
 };
 
-export default notification;
+export default notifications;

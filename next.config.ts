@@ -3,6 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* 基础配置 */
   reactStrictMode: true,
+  output: "standalone",
   
   /* 环境变量配置 */
   env: {
@@ -11,10 +12,22 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_LOGO_PATH: process.env.NEXT_PUBLIC_LOGO_PATH,
   },
   
-  /* 图片配置 */
+  /* Cloudflare Workers 适配配置 */
+  serverExternalPackages: ["@heroui/react"],
+
+  /* 静态资源优化 */
   images: {
-    domains: ['localhost'],
+    unoptimized: true,
   },
+  
+  // /* 构建优化 */
+  // eslint: {
+  //   ignoreDuringBuilds: true,
+  // },
+  // typescript: {
+  //   ignoreBuildErrors: true,
+  // },
+
 };
 
 export default nextConfig;
