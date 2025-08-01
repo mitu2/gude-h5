@@ -41,7 +41,9 @@ const LoginPage = observer(() => {
       
       // 使用MobX store的登录方法
       localStorage.setItem('token', token);
-      authStore.login(username);
+      authStore.login(token, {
+        email: username,
+      });
       
       // 获取之前的路由地址，如果没有则默认跳转到聊天页面
       const returnTo = searchParams.get('returnTo') || '/chat';

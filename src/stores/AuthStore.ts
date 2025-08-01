@@ -1,10 +1,7 @@
 import {makeAutoObservable} from 'mobx';
 
 interface User {
-  id?: string;
-  username: string;
   email?: string;
-  avatar?: string;
 }
 
 export class AuthStore {
@@ -75,16 +72,6 @@ export class AuthStore {
     }
   }
 
-  // 注册（保持向后兼容）
-  register(username: string) {
-    const user = {username};
-    this.user = user;
-    this.isLoggedIn = true;
-    
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('user', JSON.stringify(user));
-    }
-  }
 
   // 登出
   logout() {
