@@ -2,12 +2,8 @@
 
 import {makeAutoObservable} from 'mobx';
 import {getLocalStorageItem, removeLocalStorageItem, setLocalStorageItem} from "@/utils/localStorages";
+import {User} from "@/types/ApiType";
 
-
-interface User {
-    email?: string;
-    nickname?: string;
-}
 
 export class AuthStore {
 
@@ -35,8 +31,10 @@ export class AuthStore {
         setLocalStorageItem('user', JSON.stringify(this.user));
     }
 
+    get username() {
+        return this.user?.nickname + '#' + this.user?.id;
+    }
 }
-
 
 
 export const authStore = new AuthStore();

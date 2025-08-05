@@ -1,14 +1,14 @@
 'use client';
 
-import {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import SockJS from 'sockjs-client';
-import {Client} from '@stomp/stompjs';
+import {Client, StompHeaders} from '@stomp/stompjs';
 import {Avatar, Button, Card, CardBody, CardHeader, Chip, Input, Spinner} from '@heroui/react';
 import {MessageCircle, Send, User} from 'lucide-react';
-import {useRouter} from 'next/navigation';
 import {observer} from 'mobx-react-lite';
 import {API_URL} from '@/utils/env';
 import {authStore} from '@/stores/AuthStore';
+import {getLocalStorageItem} from "@/utils/localStorages";
 
 interface ChatMessage {
     sender: string;
@@ -22,38 +22,30 @@ const ChatRoom = observer(() => {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [message, setMessage] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
-    const router = useRouter();
-    const {user, isLoggedIn: isAuthenticated} = authStore;
+    const {user, isLoggedIn} = authStore;
     const [loading, setLoading] = useState(true);
 
-    // 连接到WebSocket服务器
-    const connect = () => {
-        if (!user) return;
-
-        // 使用环境变量中的API URL
+    useEffect(() => {
+        if (connected) {
+            return
+        }
+        const connectHeaders: StompHeaders = {}
+        if (isLoggedIn) {
+            connectHeaders['Authorization'] = `Bearer ${getLocalStorageItem('token', 'NONE')}`
+        }
         const wsUrl = `${API_URL}/cr`;
         const client = new Client({
+            connectHeaders,
             webSocketFactory: () => new SockJS(wsUrl),
             onConnect: () => {
                 setConnected(true);
                 setStompClient(client);
                 setLoading(false);
-
                 // 订阅公共聊天室频道
                 client.subscribe('/topic/public', (message) => {
                     const receivedMessage = JSON.parse(message.body) as ChatMessage;
                     setMessages(prevMessages => [...prevMessages, receivedMessage]);
                 });
-
-                // 发送用户加入消息
-                // client.publish({
-                //   destination: "/app/chat.addUser",
-                //   body: JSON.stringify({
-                //     sender: user.email,
-                //     content: user.email + ' 加入了聊天室',
-                //     type: 'JOIN'
-                //   })
-                // });
             },
             onStompError: (frame) => {
                 console.error('STOMP错误:', frame);
@@ -66,16 +58,8 @@ const ChatRoom = observer(() => {
         });
 
         client.activate();
-    };
+    }, [connected, isLoggedIn]);
 
-    // 断开连接
-    const disconnect = async () => {
-        if (stompClient) {
-            await stompClient.deactivate();
-            setConnected(false);
-            console.log('已断开连接');
-        }
-    };
 
     // 发送消息
     const sendMessage = (event: React.FormEvent) => {
@@ -96,15 +80,6 @@ const ChatRoom = observer(() => {
         }
     };
 
-    // 检查用户是否已登录，如果未登录则重定向到登录页面并带上返回地址
-    useEffect(() => {
-        if (!isAuthenticated) {
-            const currentPath = window.location.pathname + window.location.search;
-            router.replace(`/login?returnTo=${encodeURIComponent(currentPath)}`);
-        } else {
-            connect();
-        }
-    }, [isAuthenticated, router]);
 
     // 自动滚动到最新消息
     useEffect(() => {
@@ -114,7 +89,9 @@ const ChatRoom = observer(() => {
     // 组件卸载时断开连接
     useEffect(() => {
         return () => {
-            disconnect();
+            stompClient?.deactivate();
+            setConnected(false);
+            console.log('已断开连接');
         };
     }, []);
 

@@ -7,7 +7,7 @@ import {useRouter} from 'next/navigation';
 import {observer} from 'mobx-react-lite';
 import {APP_NAME} from '@/utils/env';
 import {toast} from 'react-toastify';
-import {userApis} from "@/utils/apis";
+import {AuthApis} from "@/utils/apis";
 
 interface RegisterFormValues {
     nickname: string;
@@ -69,7 +69,7 @@ const RegisterPage = observer(() => {
 
         try {
             // 先检查邮箱是否已注册
-            const checkRes = await userApis.checkEmail(formData.email);
+            const checkRes = await AuthApis.checkEmail(formData.email);
 
             if (!checkRes) {
                 setErrors(prev => ({...prev, email: '该邮箱已被注册'}));
@@ -77,7 +77,7 @@ const RegisterPage = observer(() => {
             }
 
             // 发送验证码
-            await userApis.sendVerificationCode(formData.email);
+            await AuthApis.sendVerificationCode(formData.email);
 
             toast.success('验证码已发送到您的邮箱');
 
@@ -106,7 +106,7 @@ const RegisterPage = observer(() => {
 
         try {
             // 调用注册接口
-            await userApis.register({
+            await AuthApis.register({
                 nickname: formData.nickname,
                 email: formData.email,
                 password: formData.password,

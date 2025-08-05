@@ -10,10 +10,7 @@ export interface User {
   id: string | number
   nickname: string
   email: string
-  avatar?: string
-  status?: number
-  createdAt?: string
-  updatedAt?: string
+  // avatar?: string
 }
 
 export interface LoginParams {

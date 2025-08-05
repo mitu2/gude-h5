@@ -1,8 +1,8 @@
 import request from './request'
-import {LoginParams, RegisterParams} from '@/types/ApiType'
+import {LoginParams, RegisterParams, User} from '@/types/ApiType'
 
 // 用户相关接口
-export const userApis = {
+export const AuthApis = {
 
     // 登录
     login(data: LoginParams): Promise<{ token: string; validity: number }> {
@@ -21,5 +21,12 @@ export const userApis = {
         return request.post('/auth/register', data)
     },
 
+
+}
+
+export const UserApis = {
+    getUserDetails(): Promise<User> {
+        return request.get('/user/details')
+    },
 }
 

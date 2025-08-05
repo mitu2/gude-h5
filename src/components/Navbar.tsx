@@ -1,6 +1,6 @@
 'use client';
 
-import {useCallback, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import Link from 'next/link';
 import {usePathname, useRouter} from 'next/navigation';
 import {
@@ -18,12 +18,13 @@ import {Home, LogOut, MessageCircle, User} from 'lucide-react';
 import {observer} from 'mobx-react-lite';
 import {authStore} from '@/stores/AuthStore';
 import {APP_NAME} from '@/utils/env';
+import Conditional from "@/components/Conditional";
 
 const Navbar = observer(() => {
     const pathname = usePathname();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    const {user, isLoggedIn: isAuthenticated} = authStore;
+    const {user, isLoggedIn: isAuthenticated, username} = authStore;
     const router = useRouter();
 
     // 处理登出
@@ -74,11 +75,11 @@ const Navbar = observer(() => {
             </NavbarContent>
 
             <NavbarContent justify="end">
-                {isAuthenticated && user ? (
+                <Conditional test={isAuthenticated && user} matchValue={true}>
                     <div className="flex items-center gap-3">
                         <div className="hidden sm:flex items-center gap-2">
                             <div className="w-2 h-2 bg-success rounded-full"></div>
-                            <span className="text-sm font-medium text-foreground/90">{user.nickname}</span>
+                            <span className="text-sm font-medium text-foreground/90">{username}</span>
                         </div>
                         <Button
                             size="sm"
@@ -91,7 +92,8 @@ const Navbar = observer(() => {
                             登出
                         </Button>
                     </div>
-                ) : (
+                </Conditional>
+                <Conditional test={isAuthenticated && user} matchValue={false}>
                     <Button
                         as={Link}
                         href="/login"
@@ -103,8 +105,7 @@ const Navbar = observer(() => {
                     >
                         登录
                     </Button>
-                )}
-
+                </Conditional>
                 <NavbarMenuToggle
                     aria-label={isMenuOpen ? "Close menu" : "Open menu"}
                     className="sm:hidden"
@@ -138,7 +139,7 @@ const Navbar = observer(() => {
                                     icon={<User className="w-4 h-4"/>}
                                     className="bg-primary"
                                 />
-                                {user.nickname}
+                                {username}
                             </div>
                         </NavbarMenuItem>
                         <NavbarMenuItem>

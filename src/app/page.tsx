@@ -68,45 +68,6 @@ export default function Home() {
             </Card>
           </div>
         </div>
-
-        {/* CTA区域 */}
-        <div className="text-center">
-          <div className="inline-flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              as={Link}
-              href="/register"
-              color="primary"
-              size="lg"
-              variant="shadow"
-              startContent={<Rocket size={20} />}
-              className="min-w-[160px] bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 text-white shadow-xl hover:shadow-2xl transform hover:scale-[1.05] active:scale-[0.95] transition-all duration-300"
-            >
-              立即开始
-            </Button>
-            <Button
-              as={Link}
-              href="/login"
-              color="primary"
-              size="lg"
-              variant="shadow"
-              startContent={<LogIn size={20} />}
-              className="min-w-[160px] bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 text-white shadow-xl hover:shadow-2xl transform hover:scale-[1.05] active:scale-[0.95] transition-all duration-300"
-            >
-              登录体验
-            </Button>
-            <Button
-              as={Link}
-              href="/chat"
-              color="secondary"
-              size="lg"
-              variant="flat"
-              startContent={<MessageCircle size={20} />}
-              className="min-w-[160px] hover:bg-secondary-100 hover:text-secondary-800 transform hover:scale-[1.05] active:scale-[0.95] transition-all duration-300"
-            >
-              立即体验
-            </Button>
-          </div>
-        </div>
       </div>
     </div>
   );

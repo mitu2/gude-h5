@@ -1,12 +1,9 @@
 import type {Metadata} from "next";
 import {Geist, Geist_Mono} from "next/font/google";
-import HeroUIClientProvider from '@/components/HeroUIClientProvider';
 import "./globals.css";
-import "react-toastify/dist/ReactToastify.css";
-import {ToastContainer} from 'react-toastify';
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import {APP_NAME} from "@/utils/env";
+import BodyContent from "@/components/BodyContent";
+import React from "react";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -32,27 +29,9 @@ export default function RootLayout({children}: Readonly<{
             className={`${geistSans.variable} ${geistMono.variable} antialiased`}
             style={{display: 'flex', flexDirection: 'column', minHeight: '100vh'}}
         >
-        <HeroUIClientProvider>
-            <div style={{display: 'flex', flexDirection: 'column', minHeight: '100vh'}}>
-                <Navbar/>
-                <main style={{flex: 1}}>
-                    {children}
-                </main>
-                <Footer/>
-                <ToastContainer
-                    position="top-right"
-                    autoClose={3000}
-                    hideProgressBar={false}
-                    newestOnTop={false}
-                    closeOnClick
-                    rtl={false}
-                    pauseOnFocusLoss
-                    draggable
-                    pauseOnHover
-                    theme="light"
-                />
-            </div>
-        </HeroUIClientProvider>
+        <BodyContent>
+            {children}
+        </BodyContent>
         </body>
         </html>
     );
