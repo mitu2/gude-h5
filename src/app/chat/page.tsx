@@ -1,19 +1,26 @@
 'use client';
 
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import SockJS from 'sockjs-client';
 import {Client, StompHeaders} from '@stomp/stompjs';
 import {Avatar, Button, Card, CardBody, CardHeader, Chip, Input, Spinner} from '@heroui/react';
-import {MessageCircle, Send, User} from 'lucide-react';
+import {MessageCircle, Smile, User} from 'lucide-react';
+import EmojiPicker, {Theme} from 'emoji-picker-react';
 import {observer} from 'mobx-react-lite';
 import {API_URL} from '@/utils/env';
 import {authStore} from '@/stores/AuthStore';
 import {getLocalStorageItem} from "@/utils/localStorages";
 
 interface ChatMessage {
-    sender: string;
-    content: string;
-    timestamp: string;
+    mid: number;
+    content: {
+        text: string
+    } | string;
+    type: string;
+    creatorId: number;
+    creatorName?: string;
+    creatorEmail: string
+    createDate: string;
 }
 
 const ChatRoom = observer(() => {
@@ -21,9 +28,9 @@ const ChatRoom = observer(() => {
     const [connected, setConnected] = useState(false);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [message, setMessage] = useState('');
-    const messagesEndRef = useRef<HTMLDivElement>(null);
     const {user, isLoggedIn} = authStore;
     const [loading, setLoading] = useState(true);
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
     useEffect(() => {
         if (connected) {
@@ -44,6 +51,7 @@ const ChatRoom = observer(() => {
                 // 订阅公共聊天室频道
                 client.subscribe('/topic/public', (message) => {
                     const receivedMessage = JSON.parse(message.body) as ChatMessage;
+                    receivedMessage.content = JSON.parse(receivedMessage.content.toString())
                     setMessages(prevMessages => [...prevMessages, receivedMessage]);
                 });
             },
@@ -65,26 +73,23 @@ const ChatRoom = observer(() => {
     const sendMessage = (event: React.FormEvent) => {
         event.preventDefault();
         if (message.trim() && stompClient && user) {
+
             const chatMessage = {
-                sender: user.email,
-                content: message,
-                timestamp: new Date().toISOString(),
-                type: 'CHAT'
+                content: JSON.stringify({
+                    text: message
+                }),
+                type: 'ALL_MSG'
             };
 
             stompClient.publish({
                 destination: "/app/message/send",
-                body: JSON.stringify(chatMessage)
+                body: JSON.stringify(chatMessage),
             });
+
             setMessage('');
         }
     };
 
-
-    // 自动滚动到最新消息
-    useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({behavior: 'smooth'});
-    }, [messages]);
 
     // 组件卸载时断开连接
     useEffect(() => {
@@ -125,15 +130,15 @@ const ChatRoom = observer(() => {
                                     <div className="flex-1 overflow-y-auto p-6 space-y-4">
                                         {messages.length > 0 ? (
                                             messages.map((msg, index) => {
-                                                const isSelf = user && msg.sender === user.email;
+                                                const isSelf = user && msg.creatorEmail === user.email;
                                                 return (
                                                     <div key={index}
                                                          className={`flex ${isSelf ? 'justify-end' : 'justify-start'} animate-in fade-in duration-300`}>
                                                         <div
-                                                            className={`max-w-xs md:max-w-md ${isSelf ? 'ml-12' : 'mr-12'}`}>
+                                                            className={`max-w-[70%] ${isSelf ? 'ml-8' : 'mr-8'}`}>
                                                             <div
-                                                                className={`rounded-2xl px-4 py-3 shadow-lg ${isSelf ? 'bg-gradient-to-r from-primary to-primary-600 text-white' : 'bg-white border border-gray-200'}`}>
-                                                                <div className="flex items-center mb-2">
+                                                                className={`rounded-lg px-3 py-2 ${isSelf ? 'bg-gradient-to-r from-primary-600 to-secondary-600 text-white' : 'bg-gray-100 border border-gray-200'}`}>
+                                                                <div className="flex items-center mb-1">
                                                                     <Avatar
                                                                         size="sm"
                                                                         icon={<User className="w-4 h-4"/>}
@@ -141,16 +146,18 @@ const ChatRoom = observer(() => {
                                                                     />
                                                                     <span
                                                                         className={`font-semibold text-sm ${isSelf ? 'text-white' : 'text-gray-700'}`}>
-                                    {msg.sender} {isSelf && <span className="opacity-75">(我)</span>}
+                                    {msg.creatorName + "#" + msg.creatorId} {isSelf &&
+                                                                        <span className="opacity-75">(我)</span>}
                                   </span>
                                                                 </div>
                                                                 <div
                                                                     className={`text-sm leading-relaxed ${isSelf ? 'text-white' : 'text-gray-700'}`}>
-                                                                    {msg.content}
+                                                                    {typeof msg.content === 'string' ? msg.content : msg.content.text}
+
                                                                 </div>
                                                                 <div
                                                                     className={`text-xs mt-2 ${isSelf ? 'text-white/70' : 'text-gray-500'} text-right`}>
-                                                                    {new Date(msg.timestamp).toLocaleTimeString('zh-CN', {
+                                                                    {new Date(msg.createDate).toLocaleTimeString('zh-CN', {
                                                                         hour: '2-digit',
                                                                         minute: '2-digit'
                                                                     })}
@@ -171,10 +178,10 @@ const ChatRoom = observer(() => {
                                                 <p className="text-gray-500 text-center max-w-sm">还没有消息，发送第一条消息开始聊天吧！</p>
                                             </div>
                                         )}
-                                        <div ref={messagesEndRef}/>
                                     </div>
 
-                                    <div className="p-4 bg-gray-50/50 backdrop-blur-sm border-t border-gray-100">
+                                    <div
+                                        className="p-4 bg-gray-50/50 backdrop-blur-sm border-t border-gray-100 relative">
                                         <form onSubmit={sendMessage} className="flex items-end space-x-3">
                                             <Input
                                                 type="text"
@@ -183,6 +190,7 @@ const ChatRoom = observer(() => {
                                                 onValueChange={setMessage}
                                                 className="flex-1"
                                                 variant="bordered"
+                                                maxLength={200}
                                                 isDisabled={!connected}
                                                 size="lg"
                                                 classNames={{
@@ -191,16 +199,39 @@ const ChatRoom = observer(() => {
                                                 }}
                                             />
                                             <Button
+                                                type="button"
+                                                isIconOnly
+                                                color="default"
+                                                size="lg"
+                                                onPress={() => setShowEmojiPicker(!showEmojiPicker)}
+                                                className="bg-gray-200 hover:bg-gray-300 text-gray-700 shadow-lg transition-all duration-300"
+                                            >
+                                                <Smile className="w-5 h-5"/>
+                                            </Button>
+                                            <Button
                                                 type="submit"
                                                 color="primary"
-                                                isDisabled={!connected || !message.trim()}
-                                                isIconOnly
+                                                isDisabled={!(connected || isLoggedIn) || !message.trim()}
                                                 size="lg"
-                                                className="bg-gradient-to-r from-primary to-primary-600 hover:from-primary-600 hover:to-primary-700 shadow-lg hover:shadow-primary/25 transition-all duration-300"
+                                                className="bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 shadow-lg hover:shadow-primary/25 transition-all duration-300"
                                             >
-                                                <Send className="w-5 h-5"/>
+                                                发送
                                             </Button>
                                         </form>
+                                        {showEmojiPicker && (
+                                            <div className="absolute bottom-24 right-4 z-10">
+                                                <EmojiPicker
+                                                    onEmojiClick={(emojiObject) => {
+                                                        setMessage(prevMsg => prevMsg + emojiObject.emoji);
+                                                        setShowEmojiPicker(false);
+                                                    }}
+                                                    lazyLoadEmojis={true}
+                                                    theme={Theme.AUTO}
+                                                    width={300}
+                                                    getEmojiUrl={(unified, style) => `https://cdn.bootcdn.net/ajax/libs/emoji-datasource-apple/15.1.2/img/${style}/64/${unified}.png`}
+                                                />
+                                            </div>
+                                        )}
                                         <div className="mt-3 flex items-center justify-center">
                                             <Chip
                                                 color={connected ? "success" : "danger"}
