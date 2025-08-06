@@ -14,7 +14,7 @@ interface BodyProps {
 
 export default function BodyContent({children}: BodyProps) {
 
-    if (authStore.isLoggedIn && !authStore.user) {
+    if (authStore.isLoggedIn && !authStore.user?.id) {
         UserApis.getUserDetails().then(user => {
             authStore.setUser(user);
         })
