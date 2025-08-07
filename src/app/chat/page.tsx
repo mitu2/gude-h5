@@ -146,8 +146,8 @@ const ChatRoom = observer(() => {
 
     return (
         <div
-            className="flex flex-col h-screen overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-            <div className="flex-1 max-w-6xl w-full mx-auto p-4 flex">
+            className="flex flex-col  overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+            <div className=" max-w-6xl w-full mx-auto p-4 flex" style={{height:'80vh'}}>
                 <div className="w-64 mr-4 hidden md:block">
                     <OnlineUserList users={onlineUsers}/>
                 </div>
