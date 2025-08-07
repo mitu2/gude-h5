@@ -7,7 +7,7 @@ export interface ApiResponse<T> {
 
 // 用户相关类型
 export interface User {
-  id: string | number
+  id: number
   nickname: string
   email: string
   // avatar?: string

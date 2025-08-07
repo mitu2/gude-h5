@@ -26,9 +26,14 @@ export class AuthStore {
         }
     }
 
-    setUser(user: User) {
+    setUser(user?: User) {
         this.user = user;
         setLocalStorageItem('user', JSON.stringify(this.user));
+    }
+
+    clearUser() {
+        this.user = undefined;
+        removeLocalStorageItem('user');
     }
 
     get username() {

@@ -5,20 +5,12 @@ import {ReactNode} from 'react';
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import {ToastContainer} from "react-toastify";
-import {authStore} from "@/stores/AuthStore";
-import {UserApis} from "@/utils/apis";
 
 interface BodyProps {
     children: ReactNode;
 }
 
 export default function BodyContent({children}: BodyProps) {
-
-    if (authStore.isLoggedIn && !authStore.user?.id) {
-        UserApis.getUserDetails().then(user => {
-            authStore.setUser(user);
-        })
-    }
 
     return (
         <HeroUIProvider locale={'zh-CN'}>

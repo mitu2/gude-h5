@@ -1,6 +1,6 @@
 'use client';
 
-import {useCallback, useEffect, useState} from 'react';
+import {useCallback, useState} from 'react';
 import Link from 'next/link';
 import {usePathname, useRouter} from 'next/navigation';
 import {
@@ -19,6 +19,7 @@ import {observer} from 'mobx-react-lite';
 import {authStore} from '@/stores/AuthStore';
 import {APP_NAME} from '@/utils/env';
 import Conditional from "@/components/Conditional";
+import {UserApis} from "@/utils/apis";
 
 const Navbar = observer(() => {
     const pathname = usePathname();
@@ -30,6 +31,7 @@ const Navbar = observer(() => {
     // 处理登出
     const handleLogout = useCallback(() => {
         authStore.token = '';
+        authStore.clearUser()
         router.push('/');
     }, [router]);
 
@@ -37,6 +39,12 @@ const Navbar = observer(() => {
         {key: '/', label: '首页', icon: Home},
         {key: '/chat', label: '聊天室', icon: MessageCircle}
     ];
+
+    if (authStore.isLoggedIn && !authStore.user?.id) {
+        UserApis.getUserDetails().then(user => {
+            authStore.setUser(user);
+        })
+    }
 
     return (
         <HeroNavbar isBordered maxWidth="xl" position="sticky"

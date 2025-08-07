@@ -10,24 +10,26 @@ import {observer} from 'mobx-react-lite';
 import {API_URL} from '@/utils/env';
 import {authStore} from '@/stores/AuthStore';
 import {getLocalStorageItem} from "@/utils/localStorages";
+import OnlineUserList from '@/components/OnlineUserList';
+import {
+    PrivateMessage,
+    PrivateMessageType,
+    PrivateStatisticsMessage,
+    PublicMessage,
+    PublicMessageType,
+    PublicUserMessage,
+    PublicUserStatusChangeMessage,
+    UserChangeStatus
+} from "@/types/ChatType";
+import {User as IUser} from "@/types/ApiType";
 
-interface ChatMessage {
-    mid: number;
-    content: {
-        text: string
-    } | string;
-    type: string;
-    creatorId: number;
-    creatorName?: string;
-    creatorEmail: string
-    createDate: string;
-}
 
 const ChatRoom = observer(() => {
     const [stompClient, setStompClient] = useState<Client | null>(null);
     const [connected, setConnected] = useState(false);
-    const [messages, setMessages] = useState<ChatMessage[]>([]);
+    const [messages, setMessages] = useState<PublicUserMessage[]>([]);
     const [message, setMessage] = useState('');
+    const [onlineUsers, setOnlineUsers] = useState<IUser[]>([]);
     const {user, isLoggedIn} = authStore;
     const [loading, setLoading] = useState(true);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -48,12 +50,54 @@ const ChatRoom = observer(() => {
                 setConnected(true);
                 setStompClient(client);
                 setLoading(false);
+
+                // 订阅用户私人频道
+                client.subscribe('/user/topic/private', (message) => {
+                    const receivedMessage = JSON.parse(message.body) as PrivateMessage;
+                    switch (receivedMessage.type) {
+                        case PrivateMessageType.STATISTICS: {
+                            const rm = receivedMessage as PrivateStatisticsMessage;
+                            setOnlineUsers(rm.users)
+                            break
+                        }
+                    }
+                });
+
                 // 订阅公共聊天室频道
                 client.subscribe('/topic/public', (message) => {
-                    const receivedMessage = JSON.parse(message.body) as ChatMessage;
-                    receivedMessage.content = JSON.parse(receivedMessage.content.toString())
-                    setMessages(prevMessages => [...prevMessages, receivedMessage]);
+                    const receivedMessage = JSON.parse(message.body) as PublicMessage;
+                    switch (receivedMessage.type) {
+                        case PublicMessageType.USER_MESSAGE: {
+                            const m = receivedMessage as PublicUserMessage;
+                            m.content = JSON.parse(m.content.toString())
+                            setMessages(prevMessages => [...prevMessages, m]);
+                            break
+                        }
+                        case PublicMessageType.USER_STATUS_CHANGE: {
+                            const m = receivedMessage as PublicUserStatusChangeMessage;
+                            if (!m.anonymous) {
+                                setOnlineUsers(prevUsers => {
+                                    const index = prevUsers.findIndex(user => user.id === m.id);
+                                    switch (m.status) {
+                                        case UserChangeStatus.JOIN: {
+                                            return index === -1 ? [...prevUsers, {
+                                                id: m.id,
+                                                nickname: m.nickname,
+                                                email: m.email
+                                            }] : prevUsers;
+                                        }
+                                        case UserChangeStatus.LEAVE: {
+                                            return index === -1 ? prevUsers : prevUsers.filter(user => user.id !== m.id)
+                                        }
+                                    }
+                                });
+                            }
+                            break
+                        }
+                    }
+
                 });
+
             },
             onStompError: (frame) => {
                 console.error('STOMP错误:', frame);
@@ -101,9 +145,14 @@ const ChatRoom = observer(() => {
     }, []);
 
     return (
-        <div className="flex flex-col h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-            <div className="flex-1 max-w-6xl w-full mx-auto p-4">
-                <Card className="h-full flex flex-col backdrop-blur-sm bg-white/80 shadow-2xl border border-white/20">
+        <div
+            className="flex flex-col h-screen overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+            <div className="flex-1 max-w-6xl w-full mx-auto p-4 flex">
+                <div className="w-64 mr-4 hidden md:block">
+                    <OnlineUserList users={onlineUsers}/>
+                </div>
+                <Card
+                    className="h-full flex flex-col backdrop-blur-sm bg-white/80 shadow-md border border-white/20 flex-1">
                     <CardHeader
                         className="flex-shrink-0 border-b border-gray-100 bg-gradient-to-r from-primary/5 to-secondary/5">
                         <div className="flex items-center space-x-3">
@@ -211,7 +260,7 @@ const ChatRoom = observer(() => {
                                             <Button
                                                 type="submit"
                                                 color="primary"
-                                                isDisabled={!(connected || isLoggedIn) || !message.trim()}
+                                                isDisabled={!connected || !isLoggedIn || !message.trim()}
                                                 size="lg"
                                                 className="bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 shadow-lg hover:shadow-primary/25 transition-all duration-300"
                                             >
