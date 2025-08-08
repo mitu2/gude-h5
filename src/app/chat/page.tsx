@@ -146,7 +146,7 @@ const ChatRoom = observer(() => {
 
     return (
         <div
-            className="flex flex-col  overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+            className="flex flex-col  overflow-hidden ">
             <div className=" max-w-6xl w-full mx-auto p-4 flex" style={{height:'80vh'}}>
                 <div className="w-64 mr-4 hidden md:block">
                     <OnlineUserList users={onlineUsers}/>
@@ -267,20 +267,20 @@ const ChatRoom = observer(() => {
                                                 发送
                                             </Button>
                                         </form>
-                                        {showEmojiPicker && (
-                                            <div className="absolute bottom-24 right-4 z-10">
-                                                <EmojiPicker
-                                                    onEmojiClick={(emojiObject) => {
-                                                        setMessage(prevMsg => prevMsg + emojiObject.emoji);
-                                                        setShowEmojiPicker(false);
-                                                    }}
-                                                    lazyLoadEmojis={true}
-                                                    theme={Theme.AUTO}
-                                                    width={300}
-                                                    getEmojiUrl={(unified, style) => `https://cdn.bootcdn.net/ajax/libs/emoji-datasource-apple/15.1.2/img/${style}/64/${unified}.png`}
-                                                />
-                                            </div>
-                                        )}
+                                        <div className="absolute bottom-24 right-4 z-10" style={{
+                                            display: showEmojiPicker ? 'block' : 'none'
+                                        }}>
+                                            <EmojiPicker
+                                                onEmojiClick={(emojiObject) => {
+                                                    setMessage(prevMsg => prevMsg + emojiObject.emoji);
+                                                    setShowEmojiPicker(false);
+                                                }}
+                                                lazyLoadEmojis={true}
+                                                theme={Theme.AUTO}
+                                                width={300}
+                                                getEmojiUrl={(unified, style) => `https://cdn.bootcdn.net/ajax/libs/emoji-datasource-apple/15.1.2/img/${style}/64/${unified}.png`}
+                                            />
+                                        </div>
                                         <div className="mt-3 flex items-center justify-center">
                                             <Chip
                                                 color={connected ? "success" : "danger"}

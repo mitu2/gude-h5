@@ -2,7 +2,7 @@
 
 import {useState} from 'react';
 import {Button, Card, CardBody, CardHeader, Input, Link, Spinner} from '@heroui/react';
-import {Lock, Mail, Rocket, User} from 'lucide-react';
+import {Lock, Mail, Rocket, User, BadgeCheck} from 'lucide-react';
 import {useRouter} from 'next/navigation';
 import {observer} from 'mobx-react-lite';
 import {APP_NAME} from '@/utils/env';
@@ -45,7 +45,7 @@ const RegisterPage = observer(() => {
         else if (formData.emailCode.length !== 6) newErrors.emailCode = '验证码应为6位数字';
 
         if (!formData.password) newErrors.password = '请输入密码';
-        else if (formData.password.length < 6) newErrors.password = '密码至少6个字符';
+        else if (formData.password.length < 8) newErrors.password = '密码至少8个字符';
 
         if (!formData.confirmPassword) newErrors.confirmPassword = '请确认密码';
         else if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = '两次输入的密码不一致';
@@ -77,9 +77,9 @@ const RegisterPage = observer(() => {
             }
 
             // 发送验证码
-            await AuthApis.sendVerificationCode(formData.email);
+            await AuthApis.sendRegisterVerificationCode(formData.email);
 
-            toast.success('验证码已发送到您的邮箱');
+            toast.success('注册验证码已发送到您的邮箱');
 
             setCountdown(60);
 
@@ -105,13 +105,19 @@ const RegisterPage = observer(() => {
         setLoading(true);
 
         try {
-            // 调用注册接口
-            await AuthApis.register({
-                nickname: formData.nickname,
-                email: formData.email,
-                password: formData.password,
-                verificationCode: formData.emailCode,
-            });
+
+            try {
+                // 调用注册接口
+                await AuthApis.register({
+                    nickname: formData.nickname,
+                    email: formData.email,
+                    password: formData.password,
+                    verificationCode: formData.emailCode,
+                });
+            } catch (e: unknown) {
+                setErrors(e as Partial<RegisterFormValues>)
+                return;
+            }
 
             toast.success('注册成功！请前往登录');
 
@@ -189,7 +195,7 @@ const RegisterPage = observer(() => {
                                 placeholder="请输入6位验证码"
                                 value={formData.emailCode}
                                 onChange={(e) => handleInputChange('emailCode', e.target.value)}
-                                startContent={<Mail className="text-default-400" size={20}/>}
+                                startContent={<BadgeCheck className="text-default-400" size={20}/>}
                                 endContent={
                                     <Button
                                         size="sm"

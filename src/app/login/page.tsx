@@ -39,9 +39,6 @@ const LoginForm = observer(() => {
 
             authStore.token = token;
 
-            // 获取之前的路由地址，如果没有则默认跳转到聊天页面
-            const returnTo = searchParams.get('returnTo') || '/chat';
-            router.push(returnTo);
         } catch (error) {
             console.error('登录错误:', error);
         } finally {
@@ -52,7 +49,7 @@ const LoginForm = observer(() => {
     // 如果已经登录，直接跳转到之前的路由或聊天页面
     useEffect(() => {
         if (isAuthenticated) {
-            const returnTo = searchParams.get('returnTo') || '/chat';
+            const returnTo = searchParams.get('returnTo') || '/';
             router.push(returnTo);
         }
     }, [isAuthenticated, router, searchParams]);
@@ -114,7 +111,7 @@ const LoginForm = observer(() => {
                             </div>
 
                             <div className="flex justify-between items-center">
-                                <Link href="#" className="text-sm text-primary hover:underline">
+                                <Link href="/forgot-password" className="text-sm text-primary hover:underline">
                                     忘记密码?
                                 </Link>
                                 <Link href="/register" className="text-sm text-primary hover:underline">

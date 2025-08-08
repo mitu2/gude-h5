@@ -1,5 +1,5 @@
 import request from './request'
-import {LoginParams, RegisterParams, User} from '@/types/ApiType'
+import {LoginParams, RegisterParams, RestPasswordParams, User} from '@/types/ApiType'
 
 // 用户相关接口
 export const AuthApis = {
@@ -13,12 +13,20 @@ export const AuthApis = {
         return request.get('/auth/register/check', {params: {email}})
     },
 
-    sendVerificationCode(email: string): Promise<never> {
+    sendRegisterVerificationCode(email: string): Promise<never> {
         return request.get('/auth/register/verification-code/send', {params: {email}})
     },
 
     register(data: RegisterParams): Promise<never> {
         return request.post('/auth/register', data)
+    },
+
+    sendRestPasswordVerificationCode(email: string): Promise<never> {
+        return request.get('/auth/rest-password/verification-code/send', {params: {email}})
+    },
+
+    restPassword(data: RestPasswordParams): Promise<never> {
+        return request.post('/auth/rest-password', data)
     },
 
 

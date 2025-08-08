@@ -25,8 +25,8 @@ export interface RegisterParams {
   verificationCode: string
 }
 
-export interface ChangePasswordParams {
-  oldPassword: string
+export interface RestPasswordParams {
+  email: string
+  verificationCode: string
   newPassword: string
-  confirmPassword: string
 }

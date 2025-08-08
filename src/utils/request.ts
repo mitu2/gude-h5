@@ -41,8 +41,15 @@ request.interceptors.response.use(
         if (data.code === 0) {
             return data.record || data
         } else {
-            // 业务错误处理
-            toast.error(data.message || '请求失败')
+            const {code, record, message } = data
+            switch (code) {
+                case 2004:
+                    toast.error(message)
+                    return Promise.reject(record)
+                default:
+                    // 业务错误处理
+                    toast.error(data.message || '请求失败')
+            }
             return Promise.reject(new Error(data.message || '请求失败'))
         }
     },
