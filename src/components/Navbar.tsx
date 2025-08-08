@@ -52,14 +52,10 @@ const Navbar = observer(() => {
             <NavbarContent justify="start">
                 <NavbarBrand>
                     <Link href="/" className="flex items-center space-x-2 group">
-                        <div
-                            className="p-2 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg group-hover:scale-110 transition-transform">
-                            <MessageCircle className="h-5 w-5 text-white"/>
-                        </div>
                         <span
                             className="text-xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
-              {APP_NAME}
-            </span>
+                            {APP_NAME}
+                        </span>
                     </Link>
                 </NavbarBrand>
             </NavbarContent>
