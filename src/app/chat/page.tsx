@@ -12,6 +12,7 @@ import {authStore} from '@/stores/AuthStore';
 import {getLocalStorageItem} from "@/utils/localStorages";
 import OnlineUserList from '@/components/OnlineUserList';
 import {
+    PrivateHistoryMessage,
     PrivateMessage,
     PrivateMessageType,
     PrivateStatisticsMessage,
@@ -60,6 +61,11 @@ const ChatRoom = observer(() => {
                             setOnlineUsers(rm.users)
                             break
                         }
+                        case PrivateMessageType.HISTORY_MESSAGE: {
+                            const rm = receivedMessage as PrivateHistoryMessage;
+                            setMessages(prevMessages => [...rm.messages, ...prevMessages]);
+                            break
+                        }
                     }
                 });
 
@@ -69,7 +75,6 @@ const ChatRoom = observer(() => {
                     switch (receivedMessage.type) {
                         case PublicMessageType.USER_MESSAGE: {
                             const m = receivedMessage as PublicUserMessage;
-                            m.content = JSON.parse(m.content.toString())
                             setMessages(prevMessages => [...prevMessages, m]);
                             break
                         }
@@ -95,7 +100,13 @@ const ChatRoom = observer(() => {
                             break
                         }
                     }
-
+                    client.publish({
+                        destination: "/app/message/history",
+                        body: JSON.stringify({
+                            mid: null,
+                            size: 20
+                        }),
+                    });
                 });
 
             },
@@ -147,7 +158,7 @@ const ChatRoom = observer(() => {
     return (
         <div
             className="flex flex-col  overflow-hidden ">
-            <div className=" max-w-6xl w-full mx-auto p-4 flex" style={{height:'80vh'}}>
+            <div className=" max-w-6xl w-full mx-auto p-4 flex" style={{height: '80vh'}}>
                 <div className="w-64 mr-4 hidden md:block">
                     <OnlineUserList users={onlineUsers}/>
                 </div>
@@ -201,7 +212,7 @@ const ChatRoom = observer(() => {
                                                                 </div>
                                                                 <div
                                                                     className={`text-sm leading-relaxed ${isSelf ? 'text-white' : 'text-gray-700'}`}>
-                                                                    {typeof msg.content === 'string' ? msg.content : msg.content.text}
+                                                                    {msg.content.text}
 
                                                                 </div>
                                                                 <div

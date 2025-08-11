@@ -13,7 +13,7 @@ export interface PublicUserMessage extends PublicMessage {
     mid: number;
     content: {
         text: string
-    } | string;
+    };
     creatorId: number;
     creatorName?: string;
     creatorEmail: string
@@ -33,7 +33,8 @@ export interface PublicUserStatusChangeMessage extends PublicMessage, User {
 
 
 export enum PrivateMessageType {
-    STATISTICS = 'STATISTICS'
+    STATISTICS = 'STATISTICS',
+    HISTORY_MESSAGE = 'HISTORY_MESSAGE',
 }
 
 export interface PrivateMessage {
@@ -44,4 +45,10 @@ export interface PrivateStatisticsMessage extends PrivateMessage{
     online: number;
     anonymous: number;
     users: User[]
+}
+
+export interface PrivateHistoryMessage extends PrivateMessage {
+    messages: PublicUserMessage[]
+    hasMore: boolean,
+    lastMId?: number
 }
