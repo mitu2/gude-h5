@@ -4,7 +4,7 @@ import React, {useEffect, useState} from 'react';
 import SockJS from 'sockjs-client';
 import {Client, StompHeaders} from '@stomp/stompjs';
 import {Avatar, Button, Card, CardBody, CardHeader, Chip, Input, Spinner} from '@heroui/react';
-import {MessageCircle, Smile, User} from 'lucide-react';
+import {MessageCircle, Smile} from 'lucide-react';
 import EmojiPicker, {Theme} from 'emoji-picker-react';
 import {observer} from 'mobx-react-lite';
 import {API_URL} from '@/utils/env';
@@ -24,7 +24,6 @@ import {
 } from "@/types/ChatType";
 import {User as IUser} from "@/types/ApiType";
 
-
 const ChatRoom = observer(() => {
     const [stompClient, setStompClient] = useState<Client | null>(null);
     const [connected, setConnected] = useState(false);
@@ -34,6 +33,7 @@ const ChatRoom = observer(() => {
     const {user, isLoggedIn} = authStore;
     const [loading, setLoading] = useState(true);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+
 
     useEffect(() => {
         if (connected) {
@@ -193,37 +193,42 @@ const ChatRoom = observer(() => {
                                                 const isSelf = user && msg.creatorEmail === user.email;
                                                 return (
                                                     <div key={index}
-                                                         className={`flex ${isSelf ? 'justify-end' : 'justify-start'} animate-in fade-in duration-300`}>
+                                                         className={`flex items-start ${isSelf ? 'justify-end' : 'justify-start'} animate-in fade-in duration-300`}>
+                                                        {!isSelf && (
+                                                            <Avatar /*src={msg.creatorAvatar}*/ name={msg.creatorName}
+                                                                                                className="flex-shrink-0 mr-3"/>
+                                                        )}
                                                         <div
-                                                            className={`max-w-[70%] ${isSelf ? 'ml-8' : 'mr-8'}`}>
+                                                            className={`flex flex-col ${isSelf ? 'items-end' : 'items-start'} min-w-[40%] max-w-[90%] break-words`}>
                                                             <div
-                                                                className={`rounded-lg px-3 py-2 ${isSelf ? 'bg-gradient-to-r from-primary-600 to-secondary-600 text-white' : 'bg-gray-100 border border-gray-200'}`}>
-                                                                <div className="flex items-center mb-1">
-                                                                    <Avatar
-                                                                        size="sm"
-                                                                        icon={<User className="w-4 h-4"/>}
-                                                                        className={`${isSelf ? 'bg-white/20' : 'bg-primary/10'} mr-2`}
-                                                                    />
-                                                                    <span
-                                                                        className={`font-semibold text-sm ${isSelf ? 'text-white' : 'text-gray-700'}`}>
-                                    {msg.creatorName + "#" + msg.creatorId} {isSelf &&
-                                                                        <span className="opacity-75">(我)</span>}
-                                  </span>
-                                                                </div>
+                                                                className={`text-xs text-gray-500 mb-1 ${isSelf ? 'mr-2' : 'ml-2'}`}>
+                                                                {isSelf ? '你' : msg.creatorName + '#' + msg.creatorId}
+                                                            </div>
+                                                            <div
+                                                                className={`max-w-[70%] break-words ${isSelf ? 'ml-8' : 'mr-8'} rounded-lg px-3 py-2 shadow-md ${isSelf ? 'bg-gradient-to-r from-primary-600 to-secondary-600 text-white' : 'bg-gray-100 border border-gray-200'}`}>
                                                                 <div
                                                                     className={`text-sm leading-relaxed ${isSelf ? 'text-white' : 'text-gray-700'}`}>
                                                                     {msg.content.text}
 
                                                                 </div>
                                                                 <div
-                                                                    className={`text-xs mt-2 ${isSelf ? 'text-white/70' : 'text-gray-500'} text-right`}>
-                                                                    {new Date(msg.createDate).toLocaleTimeString('zh-CN', {
+                                                                    className={`text-xs mt-2 ${isSelf ? 'text-white/70' : 'text-gray-500'} text-right whitespace-nowrap`}>
+                                                                    {new Date(msg.createDate).toLocaleString('zh-CN', {
+                                                                        year: 'numeric',
+                                                                        month: '2-digit',
+                                                                        day: '2-digit',
                                                                         hour: '2-digit',
-                                                                        minute: '2-digit'
-                                                                    })}
+                                                                        minute: '2-digit',
+                                                                        second: '2-digit',
+                                                                        hour12: false
+                                                                    }).replace(/\//g, '-').replace(/,/, '')}
                                                                 </div>
                                                             </div>
                                                         </div>
+                                                        {isSelf && (
+                                                            <Avatar /*src={msg.creatorAvatar}*/ name={msg.creatorName}
+                                                                                                className="flex-shrink-0 ml-3"/>
+                                                        )}
                                                     </div>
                                                 );
                                             })
