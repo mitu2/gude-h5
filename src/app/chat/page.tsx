@@ -59,6 +59,13 @@ const ChatRoom = observer(() => {
                         case PrivateMessageType.STATISTICS: {
                             const rm = receivedMessage as PrivateStatisticsMessage;
                             setOnlineUsers(rm.users)
+                            client.publish({
+                                destination: "/app/message/history",
+                                body: JSON.stringify({
+                                    mid: null,
+                                    size: 20
+                                }),
+                            });
                             break
                         }
                         case PrivateMessageType.HISTORY_MESSAGE: {
@@ -100,13 +107,6 @@ const ChatRoom = observer(() => {
                             break
                         }
                     }
-                    client.publish({
-                        destination: "/app/message/history",
-                        body: JSON.stringify({
-                            mid: null,
-                            size: 20
-                        }),
-                    });
                 });
 
             },
