@@ -307,7 +307,7 @@ const ChatRoom = observer(() => {
                                             />
                                         </div>
                                         <div className="mt-3 flex items-center justify-center">
-                                            <Chip
+                                            {/* <Chip
                                                 color={connected ? "success" : "danger"}
                                                 variant="dot"
                                                 size="sm"
@@ -315,9 +315,9 @@ const ChatRoom = observer(() => {
                                                     base: "px-3 py-1",
                                                     content: "text-xs font-medium"
                                                 }}
-                                            >
+                                            > */}
                                                 {connected ? "🟢 已连接" : "🔴 未连接"}
-                                            </Chip>
+                                            {/* </Chip> */}
                                         </div>
                                     </div>
                                 </>
