@@ -1,6 +1,6 @@
 'use client';
 
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import SockJS from 'sockjs-client';
 import {Client, StompHeaders} from '@stomp/stompjs';
 import {Avatar, Button, Card, CardBody, CardHeader, Chip, Input, Spinner} from '@heroui/react';
@@ -33,7 +33,15 @@ const ChatRoom = observer(() => {
     const {user, isLoggedIn} = authStore;
     const [loading, setLoading] = useState(true);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
 
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({behavior: "smooth"});
+    };
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]);
 
     useEffect(() => {
         if (connected) {
@@ -50,8 +58,6 @@ const ChatRoom = observer(() => {
             onConnect: () => {
                 setConnected(true);
                 setStompClient(client);
-                setLoading(false);
-
                 // 订阅用户私人频道
                 client.subscribe('/user/topic/private', (message) => {
                     const receivedMessage = JSON.parse(message.body) as PrivateMessage;
@@ -66,6 +72,7 @@ const ChatRoom = observer(() => {
                                     size: 20
                                 }),
                             });
+                            setLoading(false);
                             break
                         }
                         case PrivateMessageType.HISTORY_MESSAGE: {
@@ -133,7 +140,7 @@ const ChatRoom = observer(() => {
                 content: JSON.stringify({
                     text: message
                 }),
-                type: 'ALL_MSG'
+                type: 'TEXT'
             };
 
             stompClient.publish({
@@ -189,7 +196,8 @@ const ChatRoom = observer(() => {
                                 <>
                                     <div className="flex-1 overflow-y-auto p-6 space-y-4">
                                         {messages.length > 0 ? (
-                                            messages.map((msg, index) => {
+                                            <>
+                                                {messages.map((msg, index) => {
                                                 const isSelf = user && msg.creatorEmail === user.email;
                                                 return (
                                                     <div key={index}
@@ -231,7 +239,9 @@ const ChatRoom = observer(() => {
                                                         )}
                                                     </div>
                                                 );
-                                            })
+                                            })}
+                                            <div ref={messagesEndRef}/>
+                                            </>
                                         ) : (
                                             <div className="flex-1 flex items-center justify-center flex-col">
                                                 <div className="relative">
@@ -244,7 +254,6 @@ const ChatRoom = observer(() => {
                                             </div>
                                         )}
                                     </div>
-
                                     <div
                                         className="p-4 bg-gray-50/50 backdrop-blur-sm border-t border-gray-100 relative">
                                         <form onSubmit={sendMessage} className="flex items-end space-x-3">
