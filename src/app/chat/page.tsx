@@ -3,8 +3,8 @@
 import React, {useEffect, useRef, useState} from 'react';
 import SockJS from 'sockjs-client';
 import {Client, StompHeaders} from '@stomp/stompjs';
-import {Avatar, Card, CardBody, CardHeader, Spinner} from '@heroui/react';
-import {MessageCircle} from 'lucide-react';
+import {Avatar, Button, Card, CardBody, CardHeader, Spinner} from '@heroui/react';
+import {MessageCircle, Send} from 'lucide-react';
 import {observer} from 'mobx-react-lite';
 import {API_URL} from '@/utils/env';
 import {authStore} from '@/stores/AuthStore';
@@ -210,25 +210,20 @@ const ChatRoom = observer(() => {
                                                     const isSelf = user && msg.creatorEmail === user.email;
                                                     return (
                                                         <div key={index}
-                                                             className={`flex items-start ${isSelf ? 'justify-end' : 'justify-start'} animate-in fade-in duration-300`}>
+                                                             className={`flex items-start mb-4 ${isSelf ? 'justify-end' : ''} animate-in fade-in duration-300`}>
                                                             {!isSelf && (
                                                                 <Avatar /*src={msg.creatorAvatar}*/
                                                                     name={msg.creatorName}
-                                                                    className="flex-shrink-0 mr-3"/>
+                                                                    className="flex-shrink-0 mr-2"/>
                                                             )}
-                                                            <div
-                                                                className={`flex flex-col ${isSelf ? 'items-end' : 'items-start'} min-w-[40%] max-w-[90%] break-words`}>
-                                                                <div
-                                                                    className={`text-xs mb-1 ${isSelf ? 'mr-2' : 'ml-2'}`}>
-                                                                    {isSelf ? '你' : msg.creatorName + '#' + msg.creatorId}
-                                                                </div>
-                                                                <div
-                                                                    className={`max-w-[70%] break-words ${isSelf ? 'ml-8' : 'mr-8'} rounded-lg px-3 py-2 shadow-md  border border-gray-200`}>
-                                                                    <MDEditor.Markdown
-                                                                        source={msg.content.text}
-                                                                    />
+                                                            <div className="flex flex-col">
+                                                                <div className="flex items-center">
                                                                     <div
-                                                                        className={`text-xs mt-2 text-right whitespace-nowrap`}>
+                                                                        className={`text-sm font-semibold ${isSelf ? 'text-right text-primary-600' : 'text-gray-800'}`}>
+                                                                        {isSelf ? '你' : msg.creatorName + '#' + msg.creatorId}
+                                                                    </div>
+                                                                    <div
+                                                                        className={`text-xs text-gray-500 ml-2 whitespace-nowrap ${isSelf ? 'text-right' : ''}`}>
                                                                         {new Date(msg.createDate).toLocaleString('zh-CN', {
                                                                             year: 'numeric',
                                                                             month: '2-digit',
@@ -240,11 +235,21 @@ const ChatRoom = observer(() => {
                                                                         }).replace(/\//g, '-').replace(/,/, '')}
                                                                     </div>
                                                                 </div>
+                                                                <div
+                                                                    className={`px-4 py-2 rounded-lg shadow break-words prose prose-sm max-w-none`}
+                                                                >
+                                                                    <MDEditor.Markdown
+                                                                        source={msg.content.text}
+                                                                        style={{
+                                                                            fontSize: 14
+                                                                        }}
+                                                                    />
+                                                                </div>
                                                             </div>
                                                             {isSelf && (
                                                                 <Avatar /*src={msg.creatorAvatar}*/
                                                                     name={msg.creatorName}
-                                                                    className="flex-shrink-0 ml-3"/>
+                                                                    className="flex-shrink-0 ml-2"/>
                                                             )}
                                                         </div>
                                                     );
@@ -264,84 +269,27 @@ const ChatRoom = observer(() => {
                                         )}
                                     </div>
                                     <div
-                                        className="p-4 bg-gray-50/50 backdrop-blur-sm border-t border-gray-100 relative">
-                                        <MarkdownEditor
-                                            value={message}
-                                            onChange={(newVal = '') => setMessage(newVal)}
-                                            emoji={true}
-                                            textareaProps={{
-                                                maxLength: 500,
-                                                placeholder: '请输入你的消息,  Ctrl + Enter 发送消息...',
-                                            }}
-                                            onKeyDown={(e) => {
-                                                if (e.ctrlKey && e.key === 'Enter') {
-                                                    sendMessage()
-                                                }
-                                            }}
-                                        />
-                                        {/*<form onSubmit={sendMessage} className="flex items-end space-x-3">*/}
-                                        {/*    <Input*/}
-                                        {/*        type="text"*/}
-                                        {/*        placeholder="输入消息..."*/}
-                                        {/*        value={message}*/}
-                                        {/*        onValueChange={setMessage}*/}
-                                        {/*        className="flex-1"*/}
-                                        {/*        variant="bordered"*/}
-                                        {/*        maxLength={200}*/}
-                                        {/*        isDisabled={!connected}*/}
-                                        {/*        size="lg"*/}
-                                        {/*        classNames={{*/}
-                                        {/*            input: "text-base",*/}
-                                        {/*            inputWrapper: "bg-white/80 backdrop-blur-sm"*/}
-                                        {/*        }}*/}
-                                        {/*    />*/}
-                                        {/*    <Button*/}
-                                        {/*        type="button"*/}
-                                        {/*        isIconOnly*/}
-                                        {/*        color="default"*/}
-                                        {/*        size="lg"*/}
-                                        {/*        onPress={() => setShowEmojiPicker(!showEmojiPicker)}*/}
-                                        {/*        className="bg-gray-200 hover:bg-gray-300 text-gray-700 shadow-lg transition-all duration-300"*/}
-                                        {/*    >*/}
-                                        {/*        <Smile className="w-5 h-5"/>*/}
-                                        {/*    </Button>*/}
-                                        {/*    <Button*/}
-                                        {/*        type="submit"*/}
-                                        {/*        color="primary"*/}
-                                        {/*        isDisabled={!connected || !isLoggedIn || !message.trim()}*/}
-                                        {/*        size="lg"*/}
-                                        {/*        className="bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 shadow-lg hover:shadow-primary/25 transition-all duration-300"*/}
-                                        {/*    >*/}
-                                        {/*        发送*/}
-                                        {/*    </Button>*/}
-                                        {/*</form>*/}
-                                        {/*<div className="absolute bottom-24 right-4 z-10" style={{*/}
-                                        {/*    display: showEmojiPicker ? 'block' : 'none'*/}
-                                        {/*}}>*/}
-                                        {/*    <EmojiPicker*/}
-                                        {/*        onEmojiClick={(emojiObject) => {*/}
-                                        {/*            setMessage(prevMsg => prevMsg + emojiObject.emoji);*/}
-                                        {/*            setShowEmojiPicker(false);*/}
-                                        {/*        }}*/}
-                                        {/*        lazyLoadEmojis={true}*/}
-                                        {/*        theme={Theme.AUTO}*/}
-                                        {/*        width={300}*/}
-                                        {/*        getEmojiUrl={(unified, style) => `https://cdn.bootcdn.net/ajax/libs/emoji-datasource-apple/15.1.2/img/${style}/64/${unified}.png`}*/}
-                                        {/*    />*/}
-                                        {/*</div>*/}
-                                        {/*<div className="mt-3 flex items-center justify-center">*/}
-                                        {/*    <Chip*/}
-                                        {/*        color={connected ? "success" : "danger"}*/}
-                                        {/*        variant="dot"*/}
-                                        {/*        size="sm"*/}
-                                        {/*        classNames={{*/}
-                                        {/*            base: "px-3 py-1",*/}
-                                        {/*            content: "text-xs font-medium"*/}
-                                        {/*        }}*/}
-                                        {/*    >*/}
-                                        {/*        {connected ? "🟢 已连接" : "🔴 未连接"}*/}
-                                        {/*    </Chip>*/}
-                                        {/*</div>*/}
+                                        className="p-4 bg-gray-50/50 backdrop-blur-sm border-t border-gray-100 relative flex items-end">
+                                        <div className="flex-1">
+                                            <MarkdownEditor
+                                                value={message}
+                                                onChange={(newVal = '') => setMessage(newVal)}
+                                                emoji={true}
+                                                textareaProps={{
+                                                    maxLength: 500,
+                                                    placeholder: '请输入你的消息, Ctrl + Enter 发送消息...',
+                                                }}
+                                                onKeyDown={(e) => {
+                                                    if (e.ctrlKey && e.key === 'Enter') {
+                                                        sendMessage()
+                                                    }
+                                                }}
+                                            />
+                                        </div>
+                                        <Button isIconOnly onPress={sendMessage}
+                                                className="h-10 px-4 py-4 absolute bottom-8 right-7">
+                                            <Send className="h-4 w-4"/>
+                                        </Button>
                                     </div>
                                 </>
                             )}
