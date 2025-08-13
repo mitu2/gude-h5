@@ -1,6 +1,6 @@
 'use client';
 
-import {useCallback, useState} from 'react';
+import {useCallback, useState, useEffect} from 'react';
 import Link from 'next/link';
 import {usePathname, useRouter} from 'next/navigation';
 import {
@@ -40,11 +40,16 @@ const Navbar = observer(() => {
         {key: '/chat', label: '聊天室', icon: MessageCircle}
     ];
 
-    if (authStore.isLoggedIn && !authStore.user?.id) {
-        UserApis.getUserDetails().then(user => {
-            authStore.setUser(user);
-        })
-    }
+
+    useEffect(() => {
+        if (isAuthenticated && !user?.id) {
+            UserApis.getUserDetails().then(user => {
+                authStore.setUser(user);
+            })
+        }
+    }, [isAuthenticated, user]);
+
+    
 
     return (
         <HeroNavbar isBordered maxWidth="xl" position="sticky"

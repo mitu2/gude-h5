@@ -17,6 +17,7 @@
     "@heroui/theme": "^2.4.20",
     "@stomp/stompjs": "^7.1.1",
     "@types/sockjs-client": "^1.5.4",
+    "@uiw/react-md-editor": "^4.0.8",
     "axios": "^1.11.0",
     "emoji-picker-react": "^4.13.2",
     "framer-motion": "^12.23.12",
@@ -27,6 +28,7 @@
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-toastify": "^11.0.5",
+    "rehype-sanitize": "^6.0.0",
     "sockjs-client": "^1.6.1"
   },
   "devDependencies": {

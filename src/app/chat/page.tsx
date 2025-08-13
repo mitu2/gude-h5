@@ -3,9 +3,8 @@
 import React, {useEffect, useRef, useState} from 'react';
 import SockJS from 'sockjs-client';
 import {Client, StompHeaders} from '@stomp/stompjs';
-import {Avatar, Button, Card, CardBody, CardHeader, Chip, Input, Spinner} from '@heroui/react';
-import {MessageCircle, Smile} from 'lucide-react';
-import EmojiPicker, {Theme} from 'emoji-picker-react';
+import {Avatar, Card, CardBody, CardHeader, Spinner} from '@heroui/react';
+import {MessageCircle} from 'lucide-react';
 import {observer} from 'mobx-react-lite';
 import {API_URL} from '@/utils/env';
 import {authStore} from '@/stores/AuthStore';
@@ -23,6 +22,9 @@ import {
     UserChangeStatus
 } from "@/types/ChatType";
 import {User as IUser} from "@/types/ApiType";
+import MarkdownEditor from "@/components/editor/MarkdownEditor";
+import toast from "@/utils/notifications";
+import MDEditor from '@uiw/react-md-editor';
 
 const ChatRoom = observer(() => {
     const [stompClient, setStompClient] = useState<Client | null>(null);
@@ -32,7 +34,6 @@ const ChatRoom = observer(() => {
     const [onlineUsers, setOnlineUsers] = useState<IUser[]>([]);
     const {user, isLoggedIn} = authStore;
     const [loading, setLoading] = useState(true);
-    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const scrollToBottom = () => {
@@ -132,10 +133,16 @@ const ChatRoom = observer(() => {
 
 
     // 发送消息
-    const sendMessage = (event: React.FormEvent) => {
-        event.preventDefault();
-        if (message.trim() && stompClient && user) {
-
+    const sendMessage = () => {
+        if (!stompClient || !connected) {
+            toast.error('未连接到聊天室！');
+            return
+        }
+        if (!isLoggedIn) {
+            toast.error('请先登录才能发送消息！');
+            return
+        }
+        if (message.trim()) {
             const chatMessage = {
                 content: JSON.stringify({
                     text: message
@@ -149,6 +156,8 @@ const ChatRoom = observer(() => {
             });
 
             setMessage('');
+        } else {
+            toast.error('请输入内容！');
         }
     };
 
@@ -165,7 +174,7 @@ const ChatRoom = observer(() => {
     return (
         <div
             className="flex flex-col  overflow-hidden ">
-            <div className=" max-w-6xl w-full mx-auto p-4 flex" style={{height: '80vh'}}>
+            <div className=" max-w-6xl w-full mx-auto p-4 flex" style={{height: '85vh'}}>
                 <div className="w-64 mr-4 hidden md:block">
                     <OnlineUserList users={onlineUsers}/>
                 </div>
@@ -198,49 +207,49 @@ const ChatRoom = observer(() => {
                                         {messages.length > 0 ? (
                                             <>
                                                 {messages.map((msg, index) => {
-                                                const isSelf = user && msg.creatorEmail === user.email;
-                                                return (
-                                                    <div key={index}
-                                                         className={`flex items-start ${isSelf ? 'justify-end' : 'justify-start'} animate-in fade-in duration-300`}>
-                                                        {!isSelf && (
-                                                            <Avatar /*src={msg.creatorAvatar}*/ name={msg.creatorName}
-                                                                                                className="flex-shrink-0 mr-3"/>
-                                                        )}
-                                                        <div
-                                                            className={`flex flex-col ${isSelf ? 'items-end' : 'items-start'} min-w-[40%] max-w-[90%] break-words`}>
+                                                    const isSelf = user && msg.creatorEmail === user.email;
+                                                    return (
+                                                        <div key={index}
+                                                             className={`flex items-start ${isSelf ? 'justify-end' : 'justify-start'} animate-in fade-in duration-300`}>
+                                                            {!isSelf && (
+                                                                <Avatar /*src={msg.creatorAvatar}*/
+                                                                    name={msg.creatorName}
+                                                                    className="flex-shrink-0 mr-3"/>
+                                                            )}
                                                             <div
-                                                                className={`text-xs text-gray-500 mb-1 ${isSelf ? 'mr-2' : 'ml-2'}`}>
-                                                                {isSelf ? '你' : msg.creatorName + '#' + msg.creatorId}
-                                                            </div>
-                                                            <div
-                                                                className={`max-w-[70%] break-words ${isSelf ? 'ml-8' : 'mr-8'} rounded-lg px-3 py-2 shadow-md ${isSelf ? 'bg-gradient-to-r from-primary-600 to-secondary-600 text-white' : 'bg-gray-100 border border-gray-200'}`}>
+                                                                className={`flex flex-col ${isSelf ? 'items-end' : 'items-start'} min-w-[40%] max-w-[90%] break-words`}>
                                                                 <div
-                                                                    className={`text-sm leading-relaxed ${isSelf ? 'text-white' : 'text-gray-700'}`}>
-                                                                    {msg.content.text}
-
+                                                                    className={`text-xs mb-1 ${isSelf ? 'mr-2' : 'ml-2'}`}>
+                                                                    {isSelf ? '你' : msg.creatorName + '#' + msg.creatorId}
                                                                 </div>
                                                                 <div
-                                                                    className={`text-xs mt-2 ${isSelf ? 'text-white/70' : 'text-gray-500'} text-right whitespace-nowrap`}>
-                                                                    {new Date(msg.createDate).toLocaleString('zh-CN', {
-                                                                        year: 'numeric',
-                                                                        month: '2-digit',
-                                                                        day: '2-digit',
-                                                                        hour: '2-digit',
-                                                                        minute: '2-digit',
-                                                                        second: '2-digit',
-                                                                        hour12: false
-                                                                    }).replace(/\//g, '-').replace(/,/, '')}
+                                                                    className={`max-w-[70%] break-words ${isSelf ? 'ml-8' : 'mr-8'} rounded-lg px-3 py-2 shadow-md  border border-gray-200`}>
+                                                                    <MDEditor.Markdown
+                                                                        source={msg.content.text}
+                                                                    />
+                                                                    <div
+                                                                        className={`text-xs mt-2 text-right whitespace-nowrap`}>
+                                                                        {new Date(msg.createDate).toLocaleString('zh-CN', {
+                                                                            year: 'numeric',
+                                                                            month: '2-digit',
+                                                                            day: '2-digit',
+                                                                            hour: '2-digit',
+                                                                            minute: '2-digit',
+                                                                            second: '2-digit',
+                                                                            hour12: false
+                                                                        }).replace(/\//g, '-').replace(/,/, '')}
+                                                                    </div>
                                                                 </div>
                                                             </div>
+                                                            {isSelf && (
+                                                                <Avatar /*src={msg.creatorAvatar}*/
+                                                                    name={msg.creatorName}
+                                                                    className="flex-shrink-0 ml-3"/>
+                                                            )}
                                                         </div>
-                                                        {isSelf && (
-                                                            <Avatar /*src={msg.creatorAvatar}*/ name={msg.creatorName}
-                                                                                                className="flex-shrink-0 ml-3"/>
-                                                        )}
-                                                    </div>
-                                                );
-                                            })}
-                                            <div ref={messagesEndRef}/>
+                                                    );
+                                                })}
+                                                <div ref={messagesEndRef}/>
                                             </>
                                         ) : (
                                             <div className="flex-1 flex items-center justify-center flex-col">
@@ -256,69 +265,83 @@ const ChatRoom = observer(() => {
                                     </div>
                                     <div
                                         className="p-4 bg-gray-50/50 backdrop-blur-sm border-t border-gray-100 relative">
-                                        <form onSubmit={sendMessage} className="flex items-end space-x-3">
-                                            <Input
-                                                type="text"
-                                                placeholder="输入消息..."
-                                                value={message}
-                                                onValueChange={setMessage}
-                                                className="flex-1"
-                                                variant="bordered"
-                                                maxLength={200}
-                                                isDisabled={!connected}
-                                                size="lg"
-                                                classNames={{
-                                                    input: "text-base",
-                                                    inputWrapper: "bg-white/80 backdrop-blur-sm"
-                                                }}
-                                            />
-                                            <Button
-                                                type="button"
-                                                isIconOnly
-                                                color="default"
-                                                size="lg"
-                                                onPress={() => setShowEmojiPicker(!showEmojiPicker)}
-                                                className="bg-gray-200 hover:bg-gray-300 text-gray-700 shadow-lg transition-all duration-300"
-                                            >
-                                                <Smile className="w-5 h-5"/>
-                                            </Button>
-                                            <Button
-                                                type="submit"
-                                                color="primary"
-                                                isDisabled={!connected || !isLoggedIn || !message.trim()}
-                                                size="lg"
-                                                className="bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 shadow-lg hover:shadow-primary/25 transition-all duration-300"
-                                            >
-                                                发送
-                                            </Button>
-                                        </form>
-                                        <div className="absolute bottom-24 right-4 z-10" style={{
-                                            display: showEmojiPicker ? 'block' : 'none'
-                                        }}>
-                                            <EmojiPicker
-                                                onEmojiClick={(emojiObject) => {
-                                                    setMessage(prevMsg => prevMsg + emojiObject.emoji);
-                                                    setShowEmojiPicker(false);
-                                                }}
-                                                lazyLoadEmojis={true}
-                                                theme={Theme.AUTO}
-                                                width={300}
-                                                getEmojiUrl={(unified, style) => `https://cdn.bootcdn.net/ajax/libs/emoji-datasource-apple/15.1.2/img/${style}/64/${unified}.png`}
-                                            />
-                                        </div>
-                                        <div className="mt-3 flex items-center justify-center">
-                                            {/* <Chip
-                                                color={connected ? "success" : "danger"}
-                                                variant="dot"
-                                                size="sm"
-                                                classNames={{
-                                                    base: "px-3 py-1",
-                                                    content: "text-xs font-medium"
-                                                }}
-                                            > */}
-                                                {connected ? "🟢 已连接" : "🔴 未连接"}
-                                            {/* </Chip> */}
-                                        </div>
+                                        <MarkdownEditor
+                                            value={message}
+                                            onChange={(newVal = '') => setMessage(newVal)}
+                                            emoji={true}
+                                            textareaProps={{
+                                                maxLength: 500,
+                                                placeholder: '请输入你的消息,  Ctrl + Enter 发送消息...',
+                                            }}
+                                            onKeyDown={(e) => {
+                                                if (e.ctrlKey && e.key === 'Enter') {
+                                                    sendMessage()
+                                                }
+                                            }}
+                                        />
+                                        {/*<form onSubmit={sendMessage} className="flex items-end space-x-3">*/}
+                                        {/*    <Input*/}
+                                        {/*        type="text"*/}
+                                        {/*        placeholder="输入消息..."*/}
+                                        {/*        value={message}*/}
+                                        {/*        onValueChange={setMessage}*/}
+                                        {/*        className="flex-1"*/}
+                                        {/*        variant="bordered"*/}
+                                        {/*        maxLength={200}*/}
+                                        {/*        isDisabled={!connected}*/}
+                                        {/*        size="lg"*/}
+                                        {/*        classNames={{*/}
+                                        {/*            input: "text-base",*/}
+                                        {/*            inputWrapper: "bg-white/80 backdrop-blur-sm"*/}
+                                        {/*        }}*/}
+                                        {/*    />*/}
+                                        {/*    <Button*/}
+                                        {/*        type="button"*/}
+                                        {/*        isIconOnly*/}
+                                        {/*        color="default"*/}
+                                        {/*        size="lg"*/}
+                                        {/*        onPress={() => setShowEmojiPicker(!showEmojiPicker)}*/}
+                                        {/*        className="bg-gray-200 hover:bg-gray-300 text-gray-700 shadow-lg transition-all duration-300"*/}
+                                        {/*    >*/}
+                                        {/*        <Smile className="w-5 h-5"/>*/}
+                                        {/*    </Button>*/}
+                                        {/*    <Button*/}
+                                        {/*        type="submit"*/}
+                                        {/*        color="primary"*/}
+                                        {/*        isDisabled={!connected || !isLoggedIn || !message.trim()}*/}
+                                        {/*        size="lg"*/}
+                                        {/*        className="bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 shadow-lg hover:shadow-primary/25 transition-all duration-300"*/}
+                                        {/*    >*/}
+                                        {/*        发送*/}
+                                        {/*    </Button>*/}
+                                        {/*</form>*/}
+                                        {/*<div className="absolute bottom-24 right-4 z-10" style={{*/}
+                                        {/*    display: showEmojiPicker ? 'block' : 'none'*/}
+                                        {/*}}>*/}
+                                        {/*    <EmojiPicker*/}
+                                        {/*        onEmojiClick={(emojiObject) => {*/}
+                                        {/*            setMessage(prevMsg => prevMsg + emojiObject.emoji);*/}
+                                        {/*            setShowEmojiPicker(false);*/}
+                                        {/*        }}*/}
+                                        {/*        lazyLoadEmojis={true}*/}
+                                        {/*        theme={Theme.AUTO}*/}
+                                        {/*        width={300}*/}
+                                        {/*        getEmojiUrl={(unified, style) => `https://cdn.bootcdn.net/ajax/libs/emoji-datasource-apple/15.1.2/img/${style}/64/${unified}.png`}*/}
+                                        {/*    />*/}
+                                        {/*</div>*/}
+                                        {/*<div className="mt-3 flex items-center justify-center">*/}
+                                        {/*    <Chip*/}
+                                        {/*        color={connected ? "success" : "danger"}*/}
+                                        {/*        variant="dot"*/}
+                                        {/*        size="sm"*/}
+                                        {/*        classNames={{*/}
+                                        {/*            base: "px-3 py-1",*/}
+                                        {/*            content: "text-xs font-medium"*/}
+                                        {/*        }}*/}
+                                        {/*    >*/}
+                                        {/*        {connected ? "🟢 已连接" : "🔴 未连接"}*/}
+                                        {/*    </Chip>*/}
+                                        {/*</div>*/}
                                     </div>
                                 </>
                             )}
