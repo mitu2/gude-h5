@@ -1,6 +1,6 @@
 'use client';
 
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import SockJS from 'sockjs-client';
 import {Client, StompHeaders} from '@stomp/stompjs';
 import {Avatar, Button, Card, CardBody, CardHeader, Spinner} from '@heroui/react';
@@ -22,15 +22,15 @@ import {
     UserChangeStatus
 } from "@/types/ChatType";
 import {User as IUser} from "@/types/ApiType";
-import MarkdownEditor from "@/components/editor/MarkdownEditor";
 import toast from "@/utils/notifications";
-import MDEditor from '@uiw/react-md-editor';
+import VditorEditor from "@/components/editor/VditorEditor";
+import Markdown from "@/components/editor/Markdown";
 
 const ChatRoom = observer(() => {
     const [stompClient, setStompClient] = useState<Client | null>(null);
     const [connected, setConnected] = useState(false);
     const [messages, setMessages] = useState<PublicUserMessage[]>([]);
-    const [message, setMessage] = useState('');
+    const [message, setMessage] = useState<string>('');
     const [onlineUsers, setOnlineUsers] = useState<IUser[]>([]);
     const {user, isLoggedIn} = authStore;
     const [loading, setLoading] = useState(true);
@@ -131,9 +131,7 @@ const ChatRoom = observer(() => {
         client.activate();
     }, [connected, isLoggedIn]);
 
-
-    // 发送消息
-    const sendMessage = () => {
+    const sendMessage = useCallback((m: string) => {
         if (!stompClient || !connected) {
             toast.error('未连接到聊天室！');
             return
@@ -142,10 +140,10 @@ const ChatRoom = observer(() => {
             toast.error('请先登录才能发送消息！');
             return
         }
-        if (message.trim()) {
+        if (m && m.trim()) {
             const chatMessage = {
                 content: JSON.stringify({
-                    text: message
+                    text: m
                 }),
                 type: 'TEXT'
             };
@@ -159,8 +157,7 @@ const ChatRoom = observer(() => {
         } else {
             toast.error('请输入内容！');
         }
-    };
-
+    }, [connected, isLoggedIn, message, stompClient])
 
     // 组件卸载时断开连接
     useEffect(() => {
@@ -238,12 +235,7 @@ const ChatRoom = observer(() => {
                                                                 <div
                                                                     className={`px-4 py-2 rounded-lg shadow break-words prose prose-sm max-w-none`}
                                                                 >
-                                                                    <MDEditor.Markdown
-                                                                        source={msg.content.text}
-                                                                        style={{
-                                                                            fontSize: 14
-                                                                        }}
-                                                                    />
+                                                                    <Markdown>{msg.content.text}</Markdown>
                                                                 </div>
                                                             </div>
                                                             {isSelf && (
@@ -271,22 +263,18 @@ const ChatRoom = observer(() => {
                                     <div
                                         className="p-4 bg-gray-50/50 backdrop-blur-sm border-t border-gray-100 relative flex items-end">
                                         <div className="flex-1">
-                                            <MarkdownEditor
+                                            <VditorEditor
                                                 value={message}
-                                                onChange={(newVal = '') => setMessage(newVal)}
-                                                emoji={true}
-                                                textareaProps={{
-                                                    maxLength: 500,
-                                                    placeholder: '请输入你的消息, Ctrl + Enter 发送消息...',
+                                                onChange={setMessage}
+                                                ctrlEnter={m => sendMessage(m)}
+                                                cache={{
+                                                    id: 'chat-vditor-editor'
                                                 }}
-                                                onKeyDown={(e) => {
-                                                    if (e.ctrlKey && e.key === 'Enter') {
-                                                        sendMessage()
-                                                    }
-                                                }}
+                                                height={180}
+                                                placeholder='请输入你的消息, Ctrl + Enter 发送消息...'
                                             />
                                         </div>
-                                        <Button isIconOnly onPress={sendMessage}
+                                        <Button isIconOnly onPress={() => sendMessage(message)}
                                                 className="h-10 px-4 py-4 absolute bottom-8 right-7">
                                             <Send className="h-4 w-4"/>
                                         </Button>

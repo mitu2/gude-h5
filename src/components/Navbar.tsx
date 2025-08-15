@@ -49,7 +49,6 @@ const Navbar = observer(() => {
         }
     }, [isAuthenticated, user]);
 
-    
 
     return (
         <HeroNavbar isBordered maxWidth="xl" position="sticky"
@@ -70,6 +69,7 @@ const Navbar = observer(() => {
                     <NavbarItem key={item.key}>
                         <Link
                             href={item.key}
+                            onClick={() => setIsMenuOpen(false)}
                             className={`flex items-center gap-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                                 pathname === item.key
                                     ? 'text-primary bg-primary/10'

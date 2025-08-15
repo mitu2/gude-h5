@@ -1,0 +1,14 @@
+@import "github-markdown-css/github-markdown.css";
+
+.markdown-body {
+    font-size: 14px !important;
+    background-color: unset !important;
+}
+
+.markdown-body pre {
+    padding: 0 !important;
+}
+
+.markdown-body code span {
+    padding: 0 !important;
+}

@@ -24,7 +24,7 @@ export default function RootLayout({children}: Readonly<{
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="zh-CN">
+        <html data-color-mode="light" lang="zh-CN">
         <body
             className={`${geistSans.variable} ${geistMono.variable} antialiased`}
             style={{display: 'flex', flexDirection: 'column', minHeight: '100vh'}}
