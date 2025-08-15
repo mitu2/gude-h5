@@ -213,7 +213,7 @@ const ChatRoom = observer(() => {
                                                                     name={msg.creatorName}
                                                                     className="flex-shrink-0 mr-2"/>
                                                             )}
-                                                            <div className="flex flex-col">
+                                                            <div className="flex flex-col max-w-[70%]">
                                                                 <div className="flex items-center">
                                                                     <div
                                                                         className={`text-sm font-semibold ${isSelf ? 'text-right text-primary-600' : 'text-gray-800'}`}>
@@ -233,7 +233,7 @@ const ChatRoom = observer(() => {
                                                                     </div>
                                                                 </div>
                                                                 <div
-                                                                    className={`px-4 py-2 rounded-lg shadow break-words prose prose-sm max-w-none`}
+                                                                    className={`px-4 py-2 rounded-lg shadow break-words prose prose-sm`}
                                                                 >
                                                                     <Markdown>{msg.content.text}</Markdown>
                                                                 </div>
