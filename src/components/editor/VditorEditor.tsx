@@ -22,7 +22,9 @@ export default function VditorEditor(props: VditorEditorProps) {
 
     const onEvent = (callback?: (value: string) => void) => {
         return (v: string) => {
-            onChange?.(v)
+            if (v !== value) {
+                onChange?.(v)
+            }
             callback?.(v)
         }
     }
@@ -87,7 +89,9 @@ export default function VditorEditor(props: VditorEditorProps) {
 
     useEffect(() => {
         if (mount && vditor) {
-            vditor.setValue(value || '');
+            if (vditor.getValue() != value) {
+                vditor.setValue(value || '');
+            }
         }
     }, [value])
 
