@@ -1,9 +1,8 @@
 'use client';
 
-import Link from "next/link";
-import { Button, Card, CardBody } from '@heroui/react';
-import { MessageCircle, LogIn, Rocket, User } from 'lucide-react';
-import { APP_NAME } from '@/utils/env';
+import {Card, CardBody} from '@heroui/react';
+import {MessageCircle, Rocket, User} from 'lucide-react';
+import {APP_NAME} from '@/utils/env';
 import React from "react";
 
 export default function Home() {
