@@ -270,6 +270,18 @@ const ChatRoom = observer(() => {
                                                 cache={{
                                                     id: 'chat-vditor-editor'
                                                 }}
+                                                counter={{
+                                                    enable: true
+                                                }}
+                                                toolbarConfig={{
+                                                    pin: true
+                                                }}
+                                                toolbar={[
+                                                    'emoji',
+                                                    'link',
+                                                    'upload',
+                                                    'edit-mode',
+                                                ]}
                                                 height={180}
                                                 placeholder='请输入你的消息, Ctrl + Enter 发送消息...'
                                             />
