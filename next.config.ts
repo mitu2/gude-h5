@@ -44,8 +44,10 @@ const nextConfig: NextConfig = {
 
 };
 
-if (process.env.NODE_ENV === "development") {
-    await setupDevPlatform();
-}
 
-export default nextConfig;
+export default async function getNextConfig() {
+    if (process.env.NODE_ENV === "development") {
+        await setupDevPlatform();
+    }
+    return nextConfig
+};

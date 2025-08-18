@@ -1,6 +1,6 @@
 @import "tailwindcss";
 @import "react-toastify/dist/ReactToastify.css";
-@config "../../tailwind.config.js";
+@config "../../tailwind.config.mjs";
 
 
 :root {
