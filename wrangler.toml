@@ -1,0 +1,8 @@
+name = "gude-h5"
+compatibility_date = "2025-08-18"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = ".vercel/output/static"
+
+[env.local.vars]
+NEXT_PUBLIC_API_URL = "https://gude-api.metoo.ink"
+NEXT_PUBLIC_APP_NAME = "Gude"
