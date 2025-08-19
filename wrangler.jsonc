@@ -17,5 +17,9 @@
   "observability": {
     "enabled": true
   },
-  "upload_source_maps": true
+  "upload_source_maps": true,
+  "vars": {
+    "NEXT_PUBLIC_API_URL": "https://gude-api.mitu2.com",
+    "NEXT_PUBLIC_APP_NAME": "Gude"
+  }
 }
