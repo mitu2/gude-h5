@@ -39,7 +39,7 @@ const ChatRoom = observer(() => {
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
-    function getShortName(fullName: string|undefined) {
+    function getShortName(fullName: string | undefined) {
         if (!fullName) return '';
         const firstChar = fullName[0];
         // 如果第一个是中文
@@ -230,7 +230,7 @@ const ChatRoom = observer(() => {
                                                     };
                                                     return (
                                                         <div key={index}
-                                                            className={`flex items-start mb-4 ${isSelf ? 'justify-end' : ''} animate-in fade-in duration-300 ${styles.hover}`}>
+                                                            className={`flex items-stretch mb-4 ${isSelf ? 'justify-end' : ''} animate-in fade-in duration-300 ${styles.hover}`}>
                                                             {!isSelf && (
                                                                 <Avatar /*src={msg.creatorAvatar}*/
                                                                     // name={msg.creatorName}
@@ -256,21 +256,22 @@ const ChatRoom = observer(() => {
                                                                         }).replace(/\//g, '-').replace(/,/, '')}
                                                                     </div>
                                                                 </div>
-                                                                <div className={`flex items-center justify-left`}>
+                                                                <div className={`flex items-center justify-left`} style={{ position: 'revert' }}>
                                                                     <div
-                                                                        className={`px-4 py-2 rounded-lg shadow break-words prose prose-sm`} style={{ minWidth: '164px' }}
+                                                                        className={`px-4 py-2 rounded-lg shadow break-words prose prose-sm`} style={{ minWidth: '200px' }}
                                                                     >
                                                                         <Markdown>{msg.content.text}</Markdown>
 
                                                                     </div>
-                                                                    <div className={`flex ${!isSelf ? styles.reply : styles.none}`} onClick={handleReply}>
-                                                                        回复
-                                                                    </div>
+
                                                                 </div>
 
                                                             </div>
-                                                            <div className='flex flex-col justify-center ml-2' style={{ height: '100%' }}>
 
+                                                            <div className={`${styles.reply_box}`}>
+                                                                <div className={`flex ${!isSelf ? styles.reply : styles.none}`} onClick={handleReply}>
+                                                                💬
+                                                                </div>
                                                             </div>
 
                                                             {isSelf && (
