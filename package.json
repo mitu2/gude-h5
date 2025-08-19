@@ -11,8 +11,7 @@
   },
   "resolutions": {
     "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "esbuild": "0.15.18"
+    "react-dom": "19.1.0"
   },
   "dependencies": {
     "@heroui/react": "^2.8.2",
