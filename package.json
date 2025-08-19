@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "npm run build && next start",
     "lint": "next lint",
-    "deploy:workers": "opennextjs-cloudflare build && opennextjs-cloudflare deploy"
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv env.d.ts",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview"
   },
   "resolutions": {
     "react": "19.1.0",
