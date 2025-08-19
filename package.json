@@ -9,7 +9,8 @@
     "lint": "next lint",
     "pages:build": "npx @cloudflare/next-on-pages@1",
     "preview": "npm run pages:build && wrangler pages dev",
-    "deploy": "npm run pages:build && wrangler pages deploy"
+    "deploy": "npm run pages:build && wrangler pages deploy",
+    "deploy:workers": "opennextjs-cloudflare build && opennextjs-cloudflare deploy"
   },
   "resolutions": {
     "react": "19.1.0",
@@ -19,6 +20,7 @@
   "dependencies": {
     "@heroui/react": "^2.8.2",
     "@heroui/theme": "^2.4.20",
+    "@opennextjs/cloudflare": "^1.6.5",
     "@stomp/stompjs": "^7.1.1",
     "@types/sockjs-client": "^1.5.4",
     "axios": "^1.11.0",

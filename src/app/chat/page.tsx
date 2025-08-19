@@ -319,6 +319,35 @@ const ChatRoom = observer(() => {
                                                 ]}
                                                 height={180}
                                                 placeholder='请输入你的消息, Ctrl + Enter 发送消息...'
+                                                hint={{
+                                                    extend: [
+                                                        {
+                                                            key: '@',
+                                                            hint: (key) => {
+                                                                if ('vanessa'.indexOf(key.toLocaleLowerCase()) > -1) {
+                                                                    return [
+                                                                        {
+                                                                            value: '`@Vanessa`',
+                                                                            html: '<img src="https://avatars0.githubusercontent.com/u/970828?s=60&v=4" alt="123"/> Vanessa',
+                                                                        }]
+                                                                }
+                                                                return []
+                                                            },
+                                                        },
+                                                        {
+                                                            key: '#',
+                                                            hint: (key) => {
+                                                                if ('vditor'.indexOf(key.toLocaleLowerCase()) > -1) {
+                                                                    return [
+                                                                        {
+                                                                            value: '#Vditor',
+                                                                            html: '#Vditor ♏ 一款浏览器端的 Markdown 编辑器，支持所见即所得（富文本）、即时渲染（类似 Typora）和分屏预览模式。',
+                                                                        }]
+                                                                }
+                                                                return []
+                                                            },
+                                                        }],
+                                                }}
                                             />
                                         </div>
                                         <Button isIconOnly onPress={() => sendMessage(message)}
