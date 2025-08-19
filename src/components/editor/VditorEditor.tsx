@@ -1,7 +1,7 @@
 'use client';
 
 import Vditor from "vditor";
-import "vditor/src/assets/less/index.less"
+import "vditor/dist/index.css"
 import {useEffect, useRef, useState} from "react";
 
 

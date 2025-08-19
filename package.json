@@ -4,21 +4,21 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
+    "build": "next build",
     "start": "npm run build && next start",
     "lint": "next lint",
-    "pages:build": "npx @cloudflare/next-on-pages@1",
-    "preview": "npm run pages:build && wrangler pages dev",
-    "deploy": "npm run pages:build && wrangler pages deploy"
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv env.d.ts",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview"
   },
   "resolutions": {
     "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "esbuild": "0.15.18"
+    "react-dom": "19.1.0"
   },
   "dependencies": {
     "@heroui/react": "^2.8.2",
     "@heroui/theme": "^2.4.20",
+    "@opennextjs/cloudflare": "^1.6.5",
     "@stomp/stompjs": "^7.1.1",
     "@types/sockjs-client": "^1.5.4",
     "axios": "^1.11.0",
@@ -40,7 +40,6 @@
     "vditor": "^3.11.1"
   },
   "devDependencies": {
-    "@cloudflare/next-on-pages": "^1.13.13",
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
