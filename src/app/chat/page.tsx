@@ -226,7 +226,7 @@ const ChatRoom = observer(() => {
                                                         const originalText = msg.content.text;
                                                         const quotedText = ` ##### 引用自 @${msg.creatorName}\n` +
                                                             originalText.split('\n').map(line => `> ${line}`).join('\n');
-                                                        setMessage(prev => prev ? prev + '\n' + quotedText : quotedText);
+                                                        setMessage(prev => prev ? prev + '\n' + quotedText+'\n\n\u200b' : quotedText+'\n\n\u200b');
                                                     };
                                                     return (
                                                         <div key={index}
