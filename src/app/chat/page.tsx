@@ -219,6 +219,7 @@ const ChatRoom = observer(() => {
                                             <>
                                                 {messages.map((msg, index) => {
                                                     const isSelf = user && msg.creatorEmail === user.email;
+                                                    const containsImg = /!\[.*?\]\((.*?)\)/.exec(msg.content.text);
                                                     // 点击回复时把消息内容放入输入框
                                                     const handleReply = () => {
                                                         // 这里你可以选择只插入文本，也可以加上 @用户名
@@ -226,7 +227,7 @@ const ChatRoom = observer(() => {
                                                         const originalText = msg.content.text;
                                                         const quotedText = ` ##### 引用自 @${msg.creatorName}\n` +
                                                             originalText.split('\n').map(line => `> ${line}`).join('\n');
-                                                        setMessage(prev => prev ? prev + '\n' + quotedText+'\n\n\u200b' : quotedText+'\n\n\u200b');
+                                                        setMessage(prev => prev ? prev + '\n' + quotedText + '\n\n\u200b' : quotedText + '\n\n\u200b');
                                                     };
                                                     return (
                                                         <div key={index}
@@ -259,9 +260,23 @@ const ChatRoom = observer(() => {
                                                                 <div className={`flex items-center justify-left`} style={{ position: 'revert' }}>
                                                                     <div
                                                                         className={`px-4 py-2 rounded-lg shadow break-words prose prose-sm`} style={{ minWidth: '200px' }}
+                                                                        onClick={(e) => {
+                                                                            const target = e.target as HTMLElement;
+                                                                            if (containsImg) {
+                                                                                const src = (target as HTMLImageElement).src;
+                                                                                // 简单放大效果：在新窗口打开图片
+                                                                                //   window.open(src, '_blank');
+                                                                                const overlay = document.getElementById('img-preview-overlay');
+                                                                                const overlayImg = document.getElementById('img-preview-img') as HTMLImageElement;
+                                                                                if (overlay && overlayImg) {
+                                                                                    overlayImg.src = (target as HTMLImageElement).src;
+                                                                                    overlay.style.display = 'flex'; // 显示
+                                                                                }
+
+                                                                            }
+                                                                        }}
                                                                     >
                                                                         <Markdown>{msg.content.text}</Markdown>
-
                                                                     </div>
 
                                                                 </div>
@@ -270,7 +285,7 @@ const ChatRoom = observer(() => {
 
                                                             <div className={`${styles.reply_box}`}>
                                                                 <div className={`flex ${!isSelf ? styles.reply : styles.none}`} onClick={handleReply}>
-                                                                💬
+                                                                    💬
                                                                 </div>
                                                             </div>
 
@@ -362,7 +377,37 @@ const ChatRoom = observer(() => {
                     </CardBody>
                 </Card>
             </div>
+            <div
+                id="img-preview-overlay"
+                onClick={() => {
+                    const overlay = document.getElementById('img-preview-overlay');
+                    if (overlay) overlay.style.display = 'none'; // 点击隐藏
+                }}
+                style={{
+                    display: 'none',
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100vw',
+                    height: '100vh',
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    zIndex: 9999,
+                }}
+            >
+                <img
+                    id="img-preview-img"
+                    src={undefined}
+                    style={{
+                        maxWidth: '90%',
+                        maxHeight: '90%',
+                        objectFit: 'contain',
+                    }}
+                />
+            </div>
         </div>
+
     );
 });
 
