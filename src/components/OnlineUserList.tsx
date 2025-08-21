@@ -1,13 +1,15 @@
 import React from 'react';
-import {Avatar, Card, CardBody, CardHeader} from '@heroui/react';
-import {User as IUser} from "@/types/ApiType";
-import {User} from "lucide-react";
+import { Avatar, Card, CardBody, CardHeader } from '@heroui/react';
+import { User as IUser } from "@/types/ApiType";
+import { User } from "lucide-react";
 
 interface OnlineUserListProps {
     users: IUser[];
+    count: number
 }
 
-const OnlineUserList: React.FC<OnlineUserListProps> = ({users}) => {
+const OnlineUserList: React.FC<OnlineUserListProps> = ({ users, count }) => {
+    const loginUserCount = users.length
     return (
         <Card className="h-full flex flex-col backdrop-blur-sm bg-white/80 shadow-md border border-white/20">
             <CardHeader
@@ -17,8 +19,12 @@ const OnlineUserList: React.FC<OnlineUserListProps> = ({users}) => {
                         <User className="w-6 h-6 text-primary"/>
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-800">在线用户</h1>
-                        <div className="text-sm"><span className="text-gray-700">当前在线人数: </span>{users.length}
+                        <h1 className="text-2xl font-bold text-gray-800">用户列表</h1>
+                        <div className="text-sm">
+                            <span className="text-gray-700">在线人数: </span>{loginUserCount}
+                        </div>
+                        <div className="text-sm">
+                            <span className="text-gray-700">匿名人数: </span>{count - loginUserCount}
                         </div>
                     </div>
                 </div>
@@ -28,7 +34,11 @@ const OnlineUserList: React.FC<OnlineUserListProps> = ({users}) => {
                     <div className="space-y-3">
                         {users.map(user => (
                             <div key={user.id} className="flex items-center space-x-3">
-                                <Avatar size="sm" icon={<User className="w-4 h-4"/>} className="bg-primary/10"/>
+                                <Avatar
+                                    src={user.gravatar}
+                                    size="sm"
+                                    name={user.nickname}
+                                    className="bg-primary/10"/>
                                 <span className="font-medium text-gray-700">{user.nickname + "#" + user.id}</span>
                             </div>
                         ))}

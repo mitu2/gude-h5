@@ -18,6 +18,7 @@ export interface PublicUserMessage extends PublicMessage {
     creatorName?: string;
     creatorEmail: string
     createDate: string;
+    createGravatar: string
 }
 
 export enum UserChangeStatus {

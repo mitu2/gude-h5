@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import SockJS from 'sockjs-client';
 import { Client, StompHeaders } from '@stomp/stompjs';
-import { Avatar, Button, Card, CardBody, CardHeader, Spinner } from '@heroui/react';
+import { Avatar, Button, Card, CardBody, Spinner } from '@heroui/react';
 import { MessageCircle, Send } from 'lucide-react';
 import { observer } from 'mobx-react-lite';
 import { API_URL } from '@/utils/env';
@@ -27,39 +27,21 @@ import VditorEditor from "@/components/editor/VditorEditor";
 import Markdown from "@/components/editor/Markdown";
 import styles from './page.module.css';
 import { UserApis } from "@/utils/apis";
+import { getShortName } from "@/utils/nameUtils";
 
 const ChatRoom = observer(() => {
     const [ stompClient, setStompClient ] = useState<Client | null>(null);
     const [ connected, setConnected ] = useState(false);
     const [ messages, setMessages ] = useState<PublicUserMessage[]>([]);
     const [ message, setMessage ] = useState<string>('');
+    const [ countUser, setCountUser ] = useState<number>(0);
     const [ onlineUsers, setOnlineUsers ] = useState<IUser[]>([]);
     const { user, isLoggedIn } = authStore;
     const [ loading, setLoading ] = useState(true);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    };
-
-    function getShortName(fullName: string | undefined) {
-        if (!fullName) return '';
-        const firstChar = fullName[0];
-        // 如果第一个是中文
-        if (/[\u4e00-\u9fa5]/.test(firstChar)) {
-            return firstChar;
-        }
-        // 如果是字母开头
-        const match = fullName.match(/^[A-Za-z]+/);
-        if (match) {
-            return match[0].slice(0, 3); // 连续字母最多取前三个
-        }
-        // 默认返回第一个字符
-        return firstChar;
-    }
-
     useEffect(() => {
-        scrollToBottom();
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
     }, [ messages ]);
 
     useEffect(() => {
@@ -84,6 +66,7 @@ const ChatRoom = observer(() => {
                         case PrivateMessageType.STATISTICS: {
                             const rm = receivedMessage as PrivateStatisticsMessage;
                             setOnlineUsers(rm.users)
+                            setCountUser(rm.online)
                             client.publish({
                                 destination: "/app/message/history",
                                 body: JSON.stringify({
@@ -113,23 +96,25 @@ const ChatRoom = observer(() => {
                         }
                         case PublicMessageType.USER_STATUS_CHANGE: {
                             const m = receivedMessage as PublicUserStatusChangeMessage;
-                            if (!m.anonymous) {
-                                setOnlineUsers(prevUsers => {
-                                    const index = prevUsers.findIndex(user => user.id === m.id);
-                                    switch (m.status) {
-                                        case UserChangeStatus.JOIN: {
-                                            return index === -1 ? [ ...prevUsers, {
-                                                id: m.id,
-                                                nickname: m.nickname,
-                                                email: m.email
-                                            } ] : prevUsers;
-                                        }
-                                        case UserChangeStatus.LEAVE: {
-                                            return index === -1 ? prevUsers : prevUsers.filter(user => user.id !== m.id)
-                                        }
+                            setOnlineUsers(prevUsers => {
+                                if (m.anonymous) {
+                                    return prevUsers;
+                                }
+                                const index = prevUsers.findIndex(user => user.id === m.id);
+                                switch (m.status) {
+                                    case UserChangeStatus.JOIN: {
+                                        return index === -1 ? [ ...prevUsers, {
+                                            id: m.id,
+                                            nickname: m.nickname,
+                                            email: m.email,
+                                            gravatar: m.gravatar,
+                                        } ] : prevUsers;
                                     }
-                                });
-                            }
+                                    case UserChangeStatus.LEAVE: {
+                                        return index === -1 ? prevUsers : prevUsers.filter(user => user.id !== m.id)
+                                    }
+                                }
+                            });
                             break
                         }
                     }
@@ -188,26 +173,13 @@ const ChatRoom = observer(() => {
 
     return (
         <div
-            className="flex flex-col  overflow-hidden ">
-            <div className=" max-w-6xl w-full mx-auto p-4 flex" style={{ height: '85vh' }}>
+            className="flex flex-col overflow-hidden">
+            <div className=" max-w-6xl w-full mx-auto p-4 flex" style={{ height: '90vh' }}>
                 <div className="w-64 mr-4 hidden md:block">
-                    <OnlineUserList users={onlineUsers}/>
+                    <OnlineUserList users={onlineUsers} count={countUser}/>
                 </div>
                 <Card
                     className="h-full flex flex-col backdrop-blur-sm bg-white/80 shadow-md border border-white/20 flex-1">
-                    <CardHeader
-                        className="flex-shrink-0 border-b border-gray-100 bg-gradient-to-r from-primary/5 to-secondary/5">
-                        <div className="flex items-center space-x-3">
-                            <div className="p-2 bg-primary/10 rounded-full">
-                                <MessageCircle className="w-6 h-6 text-primary"/>
-                            </div>
-                            <div>
-                                <h1 className="text-2xl font-bold text-gray-800">实时聊天室</h1>
-                                <p className="text-sm text-gray-500">与朋友们畅聊无阻</p>
-                            </div>
-                        </div>
-                    </CardHeader>
-
                     <CardBody className="flex-1 overflow-hidden p-0">
                         <div className="h-full flex flex-col">
                             {loading ? (
@@ -237,8 +209,8 @@ const ChatRoom = observer(() => {
                                                         <div key={index}
                                                              className={`flex items-stretch mb-4 ${isSelf ? 'justify-end' : ''} animate-in fade-in duration-300 ${styles.hover}`}>
                                                             {!isSelf && (
-                                                                <Avatar /*src={msg.creatorAvatar}*/
-                                                                    // name={msg.creatorName}
+                                                                <Avatar
+                                                                    src={msg.createGravatar}
                                                                     name={getShortName(msg.creatorName)}
                                                                     className="flex-shrink-0 mr-2"/>
                                                             )}
@@ -269,7 +241,6 @@ const ChatRoom = observer(() => {
                                                                         onClick={(e) => {
                                                                             const target = e.target as HTMLElement;
                                                                             if (containsImg) {
-                                                                                const src = (target as HTMLImageElement).src;
                                                                                 // 简单放大效果：在新窗口打开图片
                                                                                 //   window.open(src, '_blank');
                                                                                 const overlay = document.getElementById('img-preview-overlay');
@@ -298,7 +269,8 @@ const ChatRoom = observer(() => {
                                                             </div>
 
                                                             {isSelf && (
-                                                                <Avatar /*src={msg.creatorAvatar}*/
+                                                                <Avatar
+                                                                    src={msg.createGravatar}
                                                                     name={msg.creatorName}
                                                                     className="flex-shrink-0 ml-2"/>
                                                             )}
