@@ -30,19 +30,20 @@ import { UserApis } from "@/utils/apis";
 import { getShortName } from "@/utils/nameUtils";
 
 const ChatRoom = observer(() => {
-    const [ stompClient, setStompClient ] = useState<Client | null>(null);
-    const [ connected, setConnected ] = useState(false);
-    const [ messages, setMessages ] = useState<PublicUserMessage[]>([]);
-    const [ message, setMessage ] = useState<string>('');
-    const [ countUser, setCountUser ] = useState<number>(0);
-    const [ onlineUsers, setOnlineUsers ] = useState<IUser[]>([]);
+    const [stompClient, setStompClient] = useState<Client | null>(null);
+    const [connected, setConnected] = useState(false);
+    const [messages, setMessages] = useState<PublicUserMessage[]>([]);
+    const [message, setMessage] = useState<string>('');
+    const [countUser, setCountUser] = useState<number>(0);
+    const [onlineUsers, setOnlineUsers] = useState<IUser[]>([]);
     const { user, isLoggedIn } = authStore;
-    const [ loading, setLoading ] = useState(true);
+    const [loading, setLoading] = useState(true);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const [previewSrc, setPreviewSrc] = useState<string | null>(null);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-    }, [ messages ]);
+    }, [messages]);
 
     useEffect(() => {
         if (connected) {
@@ -79,7 +80,7 @@ const ChatRoom = observer(() => {
                         }
                         case PrivateMessageType.HISTORY_MESSAGE: {
                             const rm = receivedMessage as PrivateHistoryMessage;
-                            setMessages(prevMessages => [ ...rm.messages, ...prevMessages ]);
+                            setMessages(prevMessages => [...rm.messages, ...prevMessages]);
                             break
                         }
                     }
@@ -91,7 +92,7 @@ const ChatRoom = observer(() => {
                     switch (receivedMessage.type) {
                         case PublicMessageType.USER_MESSAGE: {
                             const m = receivedMessage as PublicUserMessage;
-                            setMessages(prevMessages => [ ...prevMessages, m ]);
+                            setMessages(prevMessages => [...prevMessages, m]);
                             break
                         }
                         case PublicMessageType.USER_STATUS_CHANGE: {
@@ -103,12 +104,12 @@ const ChatRoom = observer(() => {
                                 const index = prevUsers.findIndex(user => user.id === m.id);
                                 switch (m.status) {
                                     case UserChangeStatus.JOIN: {
-                                        return index === -1 ? [ ...prevUsers, {
+                                        return index === -1 ? [...prevUsers, {
                                             id: m.id,
                                             nickname: m.nickname,
                                             email: m.email,
                                             gravatar: m.gravatar,
-                                        } ] : prevUsers;
+                                        }] : prevUsers;
                                     }
                                     case UserChangeStatus.LEAVE: {
                                         return index === -1 ? prevUsers : prevUsers.filter(user => user.id !== m.id)
@@ -132,7 +133,7 @@ const ChatRoom = observer(() => {
         });
 
         client.activate();
-    }, [ connected, isLoggedIn ]);
+    }, [connected, isLoggedIn]);
 
     const sendMessage = useCallback((m: string) => {
         if (!stompClient || !connected) {
@@ -160,7 +161,7 @@ const ChatRoom = observer(() => {
         } else {
             toast.error('请输入内容！');
         }
-    }, [ connected, isLoggedIn, message, stompClient ])
+    }, [connected, isLoggedIn, message, stompClient])
 
     // 组件卸载时断开连接
     useEffect(() => {
@@ -176,7 +177,7 @@ const ChatRoom = observer(() => {
             className="flex flex-col overflow-hidden">
             <div className=" max-w-6xl w-full mx-auto p-4 flex" style={{ height: '90vh' }}>
                 <div className="w-64 mr-4 hidden md:block">
-                    <OnlineUserList users={onlineUsers} count={countUser}/>
+                    <OnlineUserList users={onlineUsers} count={countUser} />
                 </div>
                 <Card
                     className="h-full flex flex-col backdrop-blur-sm bg-white/80 shadow-md border border-white/20 flex-1">
@@ -184,7 +185,7 @@ const ChatRoom = observer(() => {
                         <div className="h-full flex flex-col">
                             {loading ? (
                                 <div className="flex-1 flex items-center justify-center flex-col">
-                                    <Spinner size="lg" color="primary"/>
+                                    <Spinner size="lg" color="primary" />
                                     <p className="ml-2 text-primary font-medium mt-4">正在连接聊天室...</p>
                                     <p className="text-sm text-gray-500 mt-2">请稍候，正在建立连接</p>
                                 </div>
@@ -207,12 +208,12 @@ const ChatRoom = observer(() => {
                                                     };
                                                     return (
                                                         <div key={index}
-                                                             className={`flex items-stretch mb-4 ${isSelf ? 'justify-end' : ''} animate-in fade-in duration-300 ${styles.hover}`}>
+                                                            className={`flex items-stretch mb-4 ${isSelf ? 'justify-end' : ''} animate-in fade-in duration-300 ${styles.hover}`}>
                                                             {!isSelf && (
                                                                 <Avatar
                                                                     src={msg.createGravatar}
                                                                     name={getShortName(msg.creatorName)}
-                                                                    className="flex-shrink-0 mr-2"/>
+                                                                    className="flex-shrink-0 mr-2" />
                                                             )}
                                                             <div className="flex flex-col max-w-[70%]">
                                                                 <div className="flex items-center">
@@ -234,22 +235,14 @@ const ChatRoom = observer(() => {
                                                                     </div>
                                                                 </div>
                                                                 <div className={`flex items-center justify-left`}
-                                                                     style={{ position: 'revert' }}>
+                                                                    style={{ position: 'revert' }}>
                                                                     <div
                                                                         className={`px-4 py-2 rounded-lg shadow break-words prose prose-sm`}
                                                                         style={{ minWidth: '200px' }}
                                                                         onClick={(e) => {
                                                                             const target = e.target as HTMLElement;
-                                                                            if (containsImg) {
-                                                                                // 简单放大效果：在新窗口打开图片
-                                                                                //   window.open(src, '_blank');
-                                                                                const overlay = document.getElementById('img-preview-overlay');
-                                                                                const overlayImg = document.getElementById('img-preview-img') as HTMLImageElement;
-                                                                                if (overlay && overlayImg) {
-                                                                                    overlayImg.src = (target as HTMLImageElement).src;
-                                                                                    overlay.style.display = 'flex'; // 显示
-                                                                                }
-
+                                                                            if (target.tagName === "IMG") {
+                                                                                setPreviewSrc((target as HTMLImageElement).src);
                                                                             }
                                                                         }}
                                                                     >
@@ -272,17 +265,17 @@ const ChatRoom = observer(() => {
                                                                 <Avatar
                                                                     src={msg.createGravatar}
                                                                     name={msg.creatorName}
-                                                                    className="flex-shrink-0 ml-2"/>
+                                                                    className="flex-shrink-0 ml-2" />
                                                             )}
                                                         </div>
                                                     );
                                                 })}
-                                                <div ref={messagesEndRef}/>
+                                                <div ref={messagesEndRef} />
                                             </>
                                         ) : (
                                             <div className="flex-1 flex items-center justify-center flex-col">
                                                 <div className="relative">
-                                                    <MessageCircle className="w-20 h-20 text-gray-300 mb-6"/>
+                                                    <MessageCircle className="w-20 h-20 text-gray-300 mb-6" />
                                                     <div
                                                         className="absolute inset-0 bg-primary/10 rounded-full blur-xl"></div>
                                                 </div>
@@ -329,8 +322,8 @@ const ChatRoom = observer(() => {
                                             />
                                         </div>
                                         <Button isIconOnly onPress={() => sendMessage(message)}
-                                                className="h-10 px-4 py-4 absolute bottom-8 right-7">
-                                            <Send className="h-4 w-4"/>
+                                            className="h-10 px-4 py-4 absolute bottom-8 right-7">
+                                            <Send className="h-4 w-4" />
                                         </Button>
                                     </div>
                                 </>
@@ -339,35 +332,18 @@ const ChatRoom = observer(() => {
                     </CardBody>
                 </Card>
             </div>
-            <div
-                id="img-preview-overlay"
-                onClick={() => {
-                    const overlay = document.getElementById('img-preview-overlay');
-                    if (overlay) overlay.style.display = 'none'; // 点击隐藏
-                }}
-                style={{
-                    display: 'none',
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    width: '100vw',
-                    height: '100vh',
-                    backgroundColor: 'rgba(0,0,0,0.8)',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    zIndex: 9999,
-                }}
-            >
-                <img
-                    id="img-preview-img"
-                    src={undefined}
-                    style={{
-                        maxWidth: '90%',
-                        maxHeight: '90%',
-                        objectFit: 'contain',
-                    }}
-                />
-            </div>
+            {previewSrc && (
+                <div
+                    className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50"
+                    onClick={() => setPreviewSrc(null)}
+                >
+                    <img
+                        src={previewSrc}
+                        alt="preview"
+                        className="max-w-full max-h-full object-contain"
+                    />
+                </div>
+            )}
         </div>
 
     );

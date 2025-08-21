@@ -88,7 +88,7 @@ const Navbar = observer(() => {
                     <div className="flex items-center gap-3">
                         <div className="hidden sm:flex items-center gap-2">
                             <div className="w-2 h-2 bg-success rounded-full"></div>
-                            <span className="text-sm font-medium text-foreground/90">{username}</span>
+                            <span className="text-sm font-medium text-foreground/90 cursor-pointer" onClick={() => router.push('/setting')}>{username}</span>
                         </div>
                         <Button
                             size="sm"
