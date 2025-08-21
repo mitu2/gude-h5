@@ -26,19 +26,22 @@ import toast from "@/utils/notifications";
 import VditorEditor from "@/components/editor/VditorEditor";
 import Markdown from "@/components/editor/Markdown";
 import styles from './page.module.css';
+import { UserApis } from "@/utils/apis";
+
 const ChatRoom = observer(() => {
-    const [stompClient, setStompClient] = useState<Client | null>(null);
-    const [connected, setConnected] = useState(false);
-    const [messages, setMessages] = useState<PublicUserMessage[]>([]);
-    const [message, setMessage] = useState<string>('');
-    const [onlineUsers, setOnlineUsers] = useState<IUser[]>([]);
+    const [ stompClient, setStompClient ] = useState<Client | null>(null);
+    const [ connected, setConnected ] = useState(false);
+    const [ messages, setMessages ] = useState<PublicUserMessage[]>([]);
+    const [ message, setMessage ] = useState<string>('');
+    const [ onlineUsers, setOnlineUsers ] = useState<IUser[]>([]);
     const { user, isLoggedIn } = authStore;
-    const [loading, setLoading] = useState(true);
+    const [ loading, setLoading ] = useState(true);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
+
     function getShortName(fullName: string | undefined) {
         if (!fullName) return '';
         const firstChar = fullName[0];
@@ -54,9 +57,10 @@ const ChatRoom = observer(() => {
         // 默认返回第一个字符
         return firstChar;
     }
+
     useEffect(() => {
         scrollToBottom();
-    }, [messages]);
+    }, [ messages ]);
 
     useEffect(() => {
         if (connected) {
@@ -92,7 +96,7 @@ const ChatRoom = observer(() => {
                         }
                         case PrivateMessageType.HISTORY_MESSAGE: {
                             const rm = receivedMessage as PrivateHistoryMessage;
-                            setMessages(prevMessages => [...rm.messages, ...prevMessages]);
+                            setMessages(prevMessages => [ ...rm.messages, ...prevMessages ]);
                             break
                         }
                     }
@@ -104,7 +108,7 @@ const ChatRoom = observer(() => {
                     switch (receivedMessage.type) {
                         case PublicMessageType.USER_MESSAGE: {
                             const m = receivedMessage as PublicUserMessage;
-                            setMessages(prevMessages => [...prevMessages, m]);
+                            setMessages(prevMessages => [ ...prevMessages, m ]);
                             break
                         }
                         case PublicMessageType.USER_STATUS_CHANGE: {
@@ -114,11 +118,11 @@ const ChatRoom = observer(() => {
                                     const index = prevUsers.findIndex(user => user.id === m.id);
                                     switch (m.status) {
                                         case UserChangeStatus.JOIN: {
-                                            return index === -1 ? [...prevUsers, {
+                                            return index === -1 ? [ ...prevUsers, {
                                                 id: m.id,
                                                 nickname: m.nickname,
                                                 email: m.email
-                                            }] : prevUsers;
+                                            } ] : prevUsers;
                                         }
                                         case UserChangeStatus.LEAVE: {
                                             return index === -1 ? prevUsers : prevUsers.filter(user => user.id !== m.id)
@@ -143,7 +147,7 @@ const ChatRoom = observer(() => {
         });
 
         client.activate();
-    }, [connected, isLoggedIn]);
+    }, [ connected, isLoggedIn ]);
 
     const sendMessage = useCallback((m: string) => {
         if (!stompClient || !connected) {
@@ -171,7 +175,7 @@ const ChatRoom = observer(() => {
         } else {
             toast.error('请输入内容！');
         }
-    }, [connected, isLoggedIn, message, stompClient])
+    }, [ connected, isLoggedIn, message, stompClient ])
 
     // 组件卸载时断开连接
     useEffect(() => {
@@ -187,7 +191,7 @@ const ChatRoom = observer(() => {
             className="flex flex-col  overflow-hidden ">
             <div className=" max-w-6xl w-full mx-auto p-4 flex" style={{ height: '85vh' }}>
                 <div className="w-64 mr-4 hidden md:block">
-                    <OnlineUserList users={onlineUsers} />
+                    <OnlineUserList users={onlineUsers}/>
                 </div>
                 <Card
                     className="h-full flex flex-col backdrop-blur-sm bg-white/80 shadow-md border border-white/20 flex-1">
@@ -195,7 +199,7 @@ const ChatRoom = observer(() => {
                         className="flex-shrink-0 border-b border-gray-100 bg-gradient-to-r from-primary/5 to-secondary/5">
                         <div className="flex items-center space-x-3">
                             <div className="p-2 bg-primary/10 rounded-full">
-                                <MessageCircle className="w-6 h-6 text-primary" />
+                                <MessageCircle className="w-6 h-6 text-primary"/>
                             </div>
                             <div>
                                 <h1 className="text-2xl font-bold text-gray-800">实时聊天室</h1>
@@ -208,7 +212,7 @@ const ChatRoom = observer(() => {
                         <div className="h-full flex flex-col">
                             {loading ? (
                                 <div className="flex-1 flex items-center justify-center flex-col">
-                                    <Spinner size="lg" color="primary" />
+                                    <Spinner size="lg" color="primary"/>
                                     <p className="ml-2 text-primary font-medium mt-4">正在连接聊天室...</p>
                                     <p className="text-sm text-gray-500 mt-2">请稍候，正在建立连接</p>
                                 </div>
@@ -231,12 +235,12 @@ const ChatRoom = observer(() => {
                                                     };
                                                     return (
                                                         <div key={index}
-                                                            className={`flex items-stretch mb-4 ${isSelf ? 'justify-end' : ''} animate-in fade-in duration-300 ${styles.hover}`}>
+                                                             className={`flex items-stretch mb-4 ${isSelf ? 'justify-end' : ''} animate-in fade-in duration-300 ${styles.hover}`}>
                                                             {!isSelf && (
                                                                 <Avatar /*src={msg.creatorAvatar}*/
                                                                     // name={msg.creatorName}
                                                                     name={getShortName(msg.creatorName)}
-                                                                    className="flex-shrink-0 mr-2" />
+                                                                    className="flex-shrink-0 mr-2"/>
                                                             )}
                                                             <div className="flex flex-col max-w-[70%]">
                                                                 <div className="flex items-center">
@@ -257,9 +261,11 @@ const ChatRoom = observer(() => {
                                                                         }).replace(/\//g, '-').replace(/,/, '')}
                                                                     </div>
                                                                 </div>
-                                                                <div className={`flex items-center justify-left`} style={{ position: 'revert' }}>
+                                                                <div className={`flex items-center justify-left`}
+                                                                     style={{ position: 'revert' }}>
                                                                     <div
-                                                                        className={`px-4 py-2 rounded-lg shadow break-words prose prose-sm`} style={{ minWidth: '200px' }}
+                                                                        className={`px-4 py-2 rounded-lg shadow break-words prose prose-sm`}
+                                                                        style={{ minWidth: '200px' }}
                                                                         onClick={(e) => {
                                                                             const target = e.target as HTMLElement;
                                                                             if (containsImg) {
@@ -284,7 +290,9 @@ const ChatRoom = observer(() => {
                                                             </div>
 
                                                             <div className={`${styles.reply_box}`}>
-                                                                <div className={`flex ${!isSelf ? styles.reply : styles.none}`} onClick={handleReply}>
+                                                                <div
+                                                                    className={`flex ${!isSelf ? styles.reply : styles.none}`}
+                                                                    onClick={handleReply}>
                                                                     💬
                                                                 </div>
                                                             </div>
@@ -292,17 +300,17 @@ const ChatRoom = observer(() => {
                                                             {isSelf && (
                                                                 <Avatar /*src={msg.creatorAvatar}*/
                                                                     name={msg.creatorName}
-                                                                    className="flex-shrink-0 ml-2" />
+                                                                    className="flex-shrink-0 ml-2"/>
                                                             )}
                                                         </div>
                                                     );
                                                 })}
-                                                <div ref={messagesEndRef} />
+                                                <div ref={messagesEndRef}/>
                                             </>
                                         ) : (
                                             <div className="flex-1 flex items-center justify-center flex-col">
                                                 <div className="relative">
-                                                    <MessageCircle className="w-20 h-20 text-gray-300 mb-6" />
+                                                    <MessageCircle className="w-20 h-20 text-gray-300 mb-6"/>
                                                     <div
                                                         className="absolute inset-0 bg-primary/10 rounded-full blur-xl"></div>
                                                 </div>
@@ -328,9 +336,9 @@ const ChatRoom = observer(() => {
                                                     pin: true
                                                 }}
                                                 toolbar={[
-                                                    'emoji',
                                                     'link',
                                                     'upload',
+                                                    'emoji',
                                                     'edit-mode',
                                                 ]}
                                                 height={180}
@@ -339,36 +347,18 @@ const ChatRoom = observer(() => {
                                                     extend: [
                                                         {
                                                             key: '@',
-                                                            hint: (key) => {
-                                                                if ('vanessa'.indexOf(key.toLocaleLowerCase()) > -1) {
-                                                                    return [
-                                                                        {
-                                                                            value: '`@Vanessa`',
-                                                                            html: '<img src="https://avatars0.githubusercontent.com/u/970828?s=60&v=4" alt="123"/> Vanessa',
-                                                                        }]
-                                                                }
-                                                                return []
-                                                            },
+                                                            hint: async (key) => (isLoggedIn ? (await UserApis.fuzzy(key) || []).map(user => ({
+                                                                value: `@${user.nickname}#${user.id}`,
+                                                                html: `<img src="${user.gravatar}" alt="${user.nickname}#${user.id}"/> ${user.nickname}#${user.id}`,
+                                                            })) : [])
                                                         },
-                                                        {
-                                                            key: '#',
-                                                            hint: (key) => {
-                                                                if ('vditor'.indexOf(key.toLocaleLowerCase()) > -1) {
-                                                                    return [
-                                                                        {
-                                                                            value: '#Vditor',
-                                                                            html: '#Vditor ♏ 一款浏览器端的 Markdown 编辑器，支持所见即所得（富文本）、即时渲染（类似 Typora）和分屏预览模式。',
-                                                                        }]
-                                                                }
-                                                                return []
-                                                            },
-                                                        }],
+                                                    ],
                                                 }}
                                             />
                                         </div>
                                         <Button isIconOnly onPress={() => sendMessage(message)}
-                                            className="h-10 px-4 py-4 absolute bottom-8 right-7">
-                                            <Send className="h-4 w-4" />
+                                                className="h-10 px-4 py-4 absolute bottom-8 right-7">
+                                            <Send className="h-4 w-4"/>
                                         </Button>
                                     </div>
                                 </>

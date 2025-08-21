@@ -30,11 +30,18 @@ export const AuthApis = {
     },
 
 
+
 }
 
 export const UserApis = {
+
     getUserDetails(): Promise<User> {
         return request.get('/user/details')
     },
+
+    fuzzy(n: string): Promise<User[]> {
+        return request.get('/user/fuzzy', {params: {n}})
+    },
+
 }
 
