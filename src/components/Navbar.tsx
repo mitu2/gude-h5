@@ -52,7 +52,8 @@ const Navbar = observer(() => {
 
     return (
         <HeroNavbar isBordered maxWidth="xl" position="sticky"
-                    className="bg-background/95 backdrop-blur-md border-b border-divider">
+                    className="bg-background/95 backdrop-blur-md border-b border-divider"
+        >
             <NavbarContent justify="start">
                 <NavbarBrand>
                     <Link href="/" className="flex items-center space-x-2 group">
