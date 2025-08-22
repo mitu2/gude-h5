@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import SockJS from 'sockjs-client';
 import { Client, StompHeaders } from '@stomp/stompjs';
 import { Avatar, Button, Card, CardBody, Spinner } from '@heroui/react';
