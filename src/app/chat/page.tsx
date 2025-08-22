@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import SockJS from 'sockjs-client';
 import { Client, StompHeaders } from '@stomp/stompjs';
 import { Avatar, Button, Card, CardBody, Spinner } from '@heroui/react';
@@ -27,7 +27,9 @@ import VditorEditor from "@/components/editor/VditorEditor";
 import Markdown from "@/components/editor/Markdown";
 import styles from './page.module.css';
 import { UserApis } from "@/utils/apis";
-import { getShortName } from "@/utils/nameUtils";
+import { asShortName } from "@/utils/nameUtils";
+import AutoScroll from "@/components/AutoScroll";
+import { formatSimpleDate } from "@/utils/dateUtils";
 
 const ChatRoom = observer(() => {
     const [ stompClient, setStompClient ] = useState<Client | null>(null);
@@ -38,11 +40,6 @@ const ChatRoom = observer(() => {
     const [ onlineUsers, setOnlineUsers ] = useState<IUser[]>([]);
     const { user, isLoggedIn } = authStore;
     const [ loading, setLoading ] = useState(true);
-    const messagesEndRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-    }, [ messages ]);
 
     useEffect(() => {
         if (connected) {
@@ -134,7 +131,7 @@ const ChatRoom = observer(() => {
         client.activate();
     }, [ connected, isLoggedIn ]);
 
-    const sendMessage = useCallback((m: string) => {
+    const sendMessage = (m: string) => {
         if (!stompClient || !connected) {
             toast.error('未连接到聊天室！');
             return
@@ -160,7 +157,7 @@ const ChatRoom = observer(() => {
         } else {
             toast.error('请输入内容！');
         }
-    }, [ connected, isLoggedIn, message, stompClient ])
+    }
 
     // 组件卸载时断开连接
     useEffect(() => {
@@ -190,7 +187,9 @@ const ChatRoom = observer(() => {
                                 </div>
                             ) : (
                                 <>
-                                    <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                                    <AutoScroll
+                                        disable={messages.length === 0}
+                                        className="flex-1 overflow-y-auto p-6 space-y-4">
                                         {messages.length > 0 ? (
                                             <>
                                                 {messages.map((msg, index) => {
@@ -211,7 +210,7 @@ const ChatRoom = observer(() => {
                                                             {!isSelf && (
                                                                 <Avatar
                                                                     src={msg.createGravatar}
-                                                                    name={getShortName(msg.creatorName)}
+                                                                    name={asShortName(msg.creatorName)}
                                                                     className="flex-shrink-0 mr-2"/>
                                                             )}
                                                             <div className="flex flex-col max-w-[70%]">
@@ -222,15 +221,7 @@ const ChatRoom = observer(() => {
                                                                     </div>
                                                                     <div
                                                                         className={`text-xs text-gray-500 ml-2 whitespace-nowrap ${isSelf ? 'text-right' : ''}`}>
-                                                                        {new Date(msg.createDate).toLocaleString('zh-CN', {
-                                                                            year: 'numeric',
-                                                                            month: '2-digit',
-                                                                            day: '2-digit',
-                                                                            hour: '2-digit',
-                                                                            minute: '2-digit',
-                                                                            second: '2-digit',
-                                                                            hour12: false
-                                                                        }).replace(/\//g, '-').replace(/,/, '')}
+                                                                        {formatSimpleDate(msg.createDate)}
                                                                     </div>
                                                                 </div>
                                                                 <div className={`flex items-center justify-left`}
@@ -277,7 +268,6 @@ const ChatRoom = observer(() => {
                                                         </div>
                                                     );
                                                 })}
-                                                <div ref={messagesEndRef}/>
                                             </>
                                         ) : (
                                             <div className="flex-1 flex items-center justify-center flex-col">
@@ -290,7 +280,7 @@ const ChatRoom = observer(() => {
                                                 <p className="text-gray-500 text-center max-w-sm">还没有消息，发送第一条消息开始聊天吧！</p>
                                             </div>
                                         )}
-                                    </div>
+                                    </AutoScroll>
                                     <div
                                         className="p-4 bg-gray-50/50 backdrop-blur-sm border-t border-gray-100 relative flex items-end">
                                         <div className="flex-1">
@@ -305,7 +295,7 @@ const ChatRoom = observer(() => {
                                                     enable: true
                                                 }}
                                                 toolbarConfig={{
-                                                    pin: true
+                                                    pin: false
                                                 }}
                                                 toolbar={[
                                                     'link',
@@ -316,6 +306,7 @@ const ChatRoom = observer(() => {
                                                 height={180}
                                                 placeholder='请输入你的消息, Ctrl + Enter 发送消息...'
                                                 hint={{
+                                                    delay: 500,
                                                     extend: [
                                                         {
                                                             key: '@',

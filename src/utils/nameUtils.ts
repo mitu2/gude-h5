@@ -1,5 +1,4 @@
-
-export function getShortName(fullName: string | undefined) {
+export function asShortName(fullName: string | undefined) {
     if (!fullName) return '';
     const firstChar = fullName[0];
     // 如果第一个是中文
