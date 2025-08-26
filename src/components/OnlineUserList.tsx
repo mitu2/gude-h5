@@ -35,7 +35,7 @@ const OnlineUserList: React.FC<OnlineUserListProps> = ({ users, count }) => {
                         {users.map(user => (
                             <div key={user.id} className="flex items-center space-x-3">
                                 <Avatar
-                                    src={user.gravatar}
+                                    src={user.avatar}
                                     size="sm"
                                     name={user.nickname}
                                     className="bg-primary/10"/>

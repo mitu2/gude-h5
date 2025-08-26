@@ -10,7 +10,7 @@ export interface User {
   id: number
   nickname: string
   email: string
-  gravatar?: string
+  avatar?: string
 }
 
 export interface LoginParams {

@@ -106,14 +106,16 @@ const ChatRoom = observer(() => {
                                 const index = prevUsers.findIndex(user => user.id === m.id);
                                 switch (m.status) {
                                     case UserChangeStatus.JOIN: {
+                                        setCountUser(i => ++ i)
                                         return index === -1 ? [ ...prevUsers, {
                                             id: m.id,
                                             nickname: m.nickname,
                                             email: m.email,
-                                            gravatar: m.gravatar,
+                                            avatar: m.avatar,
                                         } ] : prevUsers;
                                     }
                                     case UserChangeStatus.LEAVE: {
+                                        setCountUser(i => -- i)
                                         return index === -1 ? prevUsers : prevUsers.filter(user => user.id !== m.id)
                                     }
                                 }
@@ -215,7 +217,7 @@ const ChatRoom = observer(() => {
                                                             className={`flex items-stretch mb-4 ${isSelf ? 'justify-end' : ''} animate-in fade-in duration-300 ${styles.hover}`}>
                                                             {!isSelf && (
                                                                 <Avatar
-                                                                    src={msg.createGravatar}
+                                                                    src={msg.createAvatar}
                                                                     name={asShortName(msg.creatorName)}
                                                                     className="flex-shrink-0 mr-2" />
                                                             )}
@@ -259,7 +261,7 @@ const ChatRoom = observer(() => {
 
                                                             {isSelf && (
                                                                 <Avatar
-                                                                    src={msg.createGravatar}
+                                                                    src={msg.createAvatar}
                                                                     name={msg.creatorName}
                                                                     className="flex-shrink-0 ml-2" />
                                                             )}
@@ -310,7 +312,7 @@ const ChatRoom = observer(() => {
                                                             key: '@',
                                                             hint: async (key) => (isLoggedIn ? (await UserApis.fuzzy(key) || []).map(user => ({
                                                                 value: `@${user.nickname}#${user.id}`,
-                                                                html: `<img src="${user.gravatar}" alt="${user.nickname}#${user.id}"/> ${user.nickname}#${user.id}`,
+                                                                html: `<img src="${user.avatar}" alt="${user.nickname}#${user.id}"/> ${user.nickname}#${user.id}`,
                                                             })) : [])
                                                         },
                                                     ],
