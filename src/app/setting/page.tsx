@@ -1,11 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Avatar, Card, CardBody, CardHeader, Button, Input, RadioGroup, Radio } from '@heroui/react';
-import { User, Mail, MessageCircle, Settings } from 'lucide-react';
-import { observer } from "mobx-react-lite";
-import { authStore } from '@/stores/AuthStore';
-import { UserApis } from "@/utils/apis";
+import React, {useEffect, useState} from 'react';
+import {Button, Input, Radio, RadioGroup} from '@heroui/react';
+import {observer} from "mobx-react-lite";
+import {authStore} from '@/stores/AuthStore';
+import {UserApis} from "@/utils/apis";
 
 const Setting = observer(() => {
     const { user, isLoggedIn: isAuthenticated, username } = authStore;

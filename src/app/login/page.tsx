@@ -11,7 +11,7 @@ import {AuthApis} from '@/utils/apis';
 
 const LoginForm = observer(() => {
     const [loading, setLoading] = useState(false);
-    const [email, setEmail] = useState('');
+    const [account, setAccount] = useState('');
     const [password, setPassword] = useState('');
     const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
     const router = useRouter();
@@ -20,7 +20,7 @@ const LoginForm = observer(() => {
 
     const validateForm = () => {
         const newErrors: { email?: string; password?: string } = {};
-        if (!email) newErrors.email = '请输入邮箱';
+        if (!account) newErrors.email = '请输入账户或者邮箱';
         if (!password) newErrors.password = '请输入密码';
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -33,7 +33,7 @@ const LoginForm = observer(() => {
         setLoading(true);
         try {
             const {token} = await AuthApis.login({
-                email,
+                account,
                 password
             });
 
@@ -76,9 +76,9 @@ const LoginForm = observer(() => {
                                 <label className="text-sm font-medium text-default-700">邮箱</label>
                                 <Input
                                     type="text"
-                                    placeholder="请输入邮箱"
-                                    value={email}
-                                    onValueChange={setEmail}
+                                    placeholder="请输入账户或者邮箱"
+                                    value={account}
+                                    onValueChange={setAccount}
                                     errorMessage={errors.email}
                                     isInvalid={!!errors.email}
                                     startContent={<User className="w-4 h-4 text-default-400"/>}
