@@ -1,3 +1,6 @@
+import { PublicUserMessage } from "@/types/ChatType";
+import { User } from "@/types/ApiType";
+
 export function asShortName(fullName: string | undefined) {
     if (!fullName) return '';
     const firstChar = fullName[0];
@@ -12,4 +15,20 @@ export function asShortName(fullName: string | undefined) {
     }
     // 默认返回第一个字符
     return firstChar;
+}
+
+export function getUserNameByMessage(message: PublicUserMessage): string {
+    const { creatorName, creator } = message;
+    if (creatorName && creator !== creatorName) {
+        return `${creator}(${creatorName})`
+    }
+    return creator;
+}
+
+export function getUserNameByUser(user: User): string {
+    const { nickname, account } = user;
+    if (nickname && account !== nickname) {
+        return `${account}(${nickname})`
+    }
+    return account || '';
 }

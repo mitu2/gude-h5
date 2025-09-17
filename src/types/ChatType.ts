@@ -14,11 +14,11 @@ export interface PublicUserMessage extends PublicMessage {
     content: {
         text: string
     };
-    creatorId: number;
+    creator: string;
     creatorName?: string;
     creatorEmail: string
     createDate: string;
-    createGravatar: string
+    createAvatar: string;
 }
 
 export enum UserChangeStatus {

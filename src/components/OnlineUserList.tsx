@@ -2,6 +2,7 @@ import React from 'react';
 import { Avatar, Card, CardBody, CardHeader } from '@heroui/react';
 import { User as IUser } from "@/types/ApiType";
 import { User } from "lucide-react";
+import {getUserNameByUser} from "@/utils/nameUtils";
 
 interface OnlineUserListProps {
     users: IUser[];
@@ -35,11 +36,11 @@ const OnlineUserList: React.FC<OnlineUserListProps> = ({ users, count }) => {
                         {users.map(user => (
                             <div key={user.id} className="flex items-center space-x-3">
                                 <Avatar
-                                    src={user.gravatar}
+                                    src={user.avatar}
                                     size="sm"
-                                    name={user.nickname}
+                                    name={user.account}
                                     className="bg-primary/10"/>
-                                <span className="font-medium text-gray-700">{user.nickname + "#" + user.id}</span>
+                                <span className="font-medium text-gray-700">{getUserNameByUser(user)}</span>
                             </div>
                         ))}
                     </div>

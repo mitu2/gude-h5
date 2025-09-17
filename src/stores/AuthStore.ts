@@ -37,7 +37,7 @@ export class AuthStore {
     }
 
     get username() {
-        return this.user?.nickname + '#' + this.user?.id;
+        return this.user?.account;
     }
 }
 
