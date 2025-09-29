@@ -1,6 +1,6 @@
 'use client';
 
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import SockJS from 'sockjs-client';
 import {Client, StompHeaders} from '@stomp/stompjs';
 import {Avatar, Button, Card, CardBody, Spinner} from '@heroui/react';
@@ -8,8 +8,8 @@ import {MessageCircle, Send} from 'lucide-react';
 import {observer} from 'mobx-react-lite';
 import {API_URL} from '@/utils/env';
 import {authStore} from '@/stores/AuthStore';
-import {getLocalStorageItem} from "@/utils/localStorages";
-import OnlineUserList from '@/components/OnlineUserList';
+import {getLocalStorageItem} from "@/utils/localStorageUtils";
+import OnlineUserList from '@/components/chat/OnlineUserList';
 import {
     PrivateHistoryMessage,
     PrivateMessage,
@@ -19,129 +19,155 @@ import {
     PublicMessageType,
     PublicUserMessage,
     PublicUserStatusChangeMessage,
+    ReceiveDestinations,
+    SendDestinations,
     UserChangeStatus
 } from "@/types/ChatType";
 import {User as IUser} from "@/types/ApiType";
 import toast from "@/utils/notifications";
 import VditorEditor from "@/components/editor/VditorEditor";
 import Markdown from "@/components/editor/Markdown";
-import styles from './page.module.css';
 import {UserApis} from "@/utils/apis";
 import {asShortName, getUserNameByMessage} from "@/utils/nameUtils";
 import AutoScroll from "@/components/AutoScroll";
 import {formatSimpleDate} from "@/utils/dateUtils";
+import * as stompUtils from "@/utils/stompUtils";
+import './page.css';
 
 const ChatRoom = observer(() => {
     const [stompClient, setStompClient] = useState<Client | null>(null);
-    const [connected, setConnected] = useState(false);
-    const [messages, setMessages] = useState<PublicUserMessage[]>([]);
+    const [sessionId, setSessionId] = useState<string | null>(null);
+    const [historicalMessages, setHistoricalMessages] = useState<PublicUserMessage[]>([]);
     const [message, setMessage] = useState<string>('');
     const [countUser, setCountUser] = useState<number>(0);
     const [onlineUsers, setOnlineUsers] = useState<IUser[]>([]);
-    const {user, isLoggedIn} = authStore;
     const [loading, setLoading] = useState(true);
-    const messagesEndRef = useRef<HTMLDivElement>(null);
     const [previewSrc, setPreviewSrc] = useState<string | null>(null);
+    const [loadingMoreMessage, setLoadingMoreMessage] = useState<boolean>(false);
+    const {user, isLoggedIn} = authStore;
 
     useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({behavior: "smooth"})
-    }, [messages]);
-
-    useEffect(() => {
-        if (connected) {
-            return
-        }
+        console.log('connecting...')
         const connectHeaders: StompHeaders = {}
         if (isLoggedIn) {
             connectHeaders['Authorization'] = `Bearer ${getLocalStorageItem('token', 'NONE')}`
         }
-        const wsUrl = `${API_URL}/cr`;
         const client = new Client({
             connectHeaders,
-            webSocketFactory: () => new SockJS(wsUrl),
-            onConnect: () => {
-                setConnected(true);
+            webSocketFactory: () => new SockJS(`${API_URL}/cr`),
+            onConnect: (frame) => {
+                const {headers} = frame
+                setSessionId(headers['user-name']);
                 setStompClient(client);
-                // 订阅用户私人频道
-                client.subscribe('/user/topic/private', (message) => {
-                    const receivedMessage = JSON.parse(message.body) as PrivateMessage;
-                    switch (receivedMessage.type) {
-                        case PrivateMessageType.STATISTICS: {
-                            const rm = receivedMessage as PrivateStatisticsMessage;
-                            setOnlineUsers(rm.users)
-                            setCountUser(rm.online)
-                            client.publish({
-                                destination: "/app/message/history",
-                                body: JSON.stringify({
-                                    mid: null,
-                                    size: 20
-                                }),
-                            });
-                            setLoading(false);
-                            break
-                        }
-                        case PrivateMessageType.HISTORY_MESSAGE: {
-                            const rm = receivedMessage as PrivateHistoryMessage;
-                            setMessages(prevMessages => [...rm.messages, ...prevMessages]);
-                            break
-                        }
-                    }
-                });
+                toast.info('聊天室连接成功')
+            },
+            onStompError: (frame) => {
+                toast.error('STOMP错误: ' + frame);
+                setLoading(false);
+            },
+            onWebSocketError: (event) => {
+                toast.error('WebSocket错误: ' + event);
+                setLoading(false);
+            }
+        });
+        client.activate();
 
-                // 订阅公共聊天室频道
-                client.subscribe('/topic/public', (message) => {
-                    const receivedMessage = JSON.parse(message.body) as PublicMessage;
-                    switch (receivedMessage.type) {
-                        case PublicMessageType.USER_MESSAGE: {
-                            const m = receivedMessage as PublicUserMessage;
-                            setMessages(prevMessages => [...prevMessages, m]);
-                            break
-                        }
-                        case PublicMessageType.USER_STATUS_CHANGE: {
-                            const m = receivedMessage as PublicUserStatusChangeMessage;
-                            setOnlineUsers(prevUsers => {
-                                if (m.anonymous) {
-                                    return prevUsers;
+        // 组件卸载时断开连接
+        return () => {
+            setSessionId(null);
+            client.deactivate();
+            toast.error('聊天室已断开连接！')
+        };
+        // eslint-disable-next-line
+    }, []);
+
+    useEffect(() => {
+        if (!stompClient) return
+        // 订阅用户私人频道
+        stompClient.subscribe(ReceiveDestinations.PRIVATE, (message) => {
+            const receivedMessage = JSON.parse(message.body) as PrivateMessage;
+            switch (receivedMessage.type) {
+                case PrivateMessageType.STATISTICS: {
+                    const rm = receivedMessage as PrivateStatisticsMessage;
+                    setOnlineUsers(rm.users)
+                    setCountUser(rm.online)
+                    stompUtils.publishJSON(stompClient, SendDestinations.HISTORY, {
+                        mid: null,
+                        size: 20
+                    })
+                    setLoading(false);
+                    break
+                }
+                case PrivateMessageType.HISTORY_MESSAGE: {
+                    const rm = receivedMessage as PrivateHistoryMessage;
+                    setHistoricalMessages(prevMessages => [...rm.messages, ...prevMessages]);
+                    break
+                }
+            }
+        });
+
+        // 订阅公共聊天室频道
+        stompClient.subscribe(ReceiveDestinations.PUBLIC, (message) => {
+            const receivedMessage = JSON.parse(message.body) as PublicMessage;
+            switch (receivedMessage.type) {
+                case PublicMessageType.USER_MESSAGE: {
+                    const m = receivedMessage as PublicUserMessage;
+                    setHistoricalMessages(prevMessages => [...prevMessages, m]);
+                    break
+                }
+                case PublicMessageType.USER_STATUS_CHANGE: {
+                    const m = receivedMessage as PublicUserStatusChangeMessage;
+                    if (m.anonymous) {
+                        switch (m.status) {
+                            case UserChangeStatus.JOIN: {
+                                if (m.sessionId !== sessionId) {
+                                    console.log('1: ', m.sessionId, sessionId)
+                                    setCountUser(i => i + 1)
                                 }
-                                const index = prevUsers.findIndex(user => user.id === m.id);
-                                switch (m.status) {
-                                    case UserChangeStatus.JOIN: {
-                                        setCountUser(i => ++i)
-                                        return index === -1 ? [...prevUsers, {
+                                break
+                            }
+                            case UserChangeStatus.LEAVE: {
+                                setCountUser(i => i - 1)
+                                break
+                            }
+                        }
+                    } else {
+                        setOnlineUsers(prevUsers => {
+                            const index = prevUsers.findIndex(user => user.id === m.id);
+                            switch (m.status) {
+                                case UserChangeStatus.JOIN: {
+                                    if (index === -1) {
+                                        setCountUser(i => i + 1)
+                                        return [...prevUsers, {
                                             id: m.id,
                                             account: m.account,
                                             nickname: m.nickname,
                                             email: m.email,
                                             avatar: m.avatar,
-                                        }] : prevUsers;
+                                        }]
                                     }
-                                    case UserChangeStatus.LEAVE: {
-                                        setCountUser(i => --i)
-                                        return index === -1 ? prevUsers : prevUsers.filter(user => user.id !== m.id)
-                                    }
+                                    return prevUsers
                                 }
-                            });
-                            break
-                        }
+                                case UserChangeStatus.LEAVE: {
+                                    if (index === -1) {
+                                        return prevUsers
+                                    }
+                                    setCountUser(i => i - 1)
+                                    return prevUsers.filter(user => user.id !== m.id)
+                                }
+                            }
+                        });
                     }
-                });
-
-            },
-            onStompError: (frame) => {
-                console.error('STOMP错误:', frame);
-                setLoading(false);
-            },
-            onWebSocketError: (event) => {
-                console.error('WebSocket错误:', event);
-                setLoading(false);
+                    break
+                }
             }
         });
 
-        client.activate();
-    }, [connected, isLoggedIn]);
+        // eslint-disable-next-line
+    }, [stompClient]);
 
     const sendMessage = (m: string) => {
-        if (!stompClient || !connected) {
+        if (!stompClient || !sessionId) {
             toast.error('未连接到聊天室！');
             return
         }
@@ -150,32 +176,32 @@ const ChatRoom = observer(() => {
             return
         }
         if (m && m.trim()) {
-            const chatMessage = {
+            setLoadingMoreMessage(false)
+            stompUtils.publishJSON(stompClient, SendDestinations.SEND_MESSAGE, {
                 content: JSON.stringify({
                     text: m
                 }),
                 type: 'TEXT'
-            };
-
-            stompClient.publish({
-                destination: "/app/message/send",
-                body: JSON.stringify(chatMessage),
-            });
-
+            })
             setMessage('');
         } else {
-            toast.error('请输入内容！');
+            toast.error('请输入有效的内容！');
         }
     }
 
-    // 组件卸载时断开连接
-    useEffect(() => {
-        return () => {
-            stompClient?.deactivate();
-            setConnected(false);
-            console.log('已断开连接');
-        };
-    }, []);
+
+    const loadMoreMessage = () => {
+        if (!stompClient) {
+            return
+        }
+        setLoadingMoreMessage(true)
+        setTimeout(() => {
+            stompUtils.publishJSON(stompClient, SendDestinations.HISTORY, {
+                mid: historicalMessages[0].mid,
+                size: 20
+            })
+        }, 500)
+    }
 
     return (
             <div
@@ -197,24 +223,27 @@ const ChatRoom = observer(() => {
                                 ) : (
                                         <>
                                             <AutoScroll
-                                                    disable={messages.length === 0}
-                                                    className="flex-1 overflow-y-auto p-6 space-y-4">
-                                                {messages.length > 0 ? (
+                                                    disable={historicalMessages.length === 0 || loadingMoreMessage}
+                                                    className="flex-1 overflow-y-auto p-6 space-y-4"
+                                                    loadingMore={true}
+                                                    onScrollToTop={loadMoreMessage}
+                                            >
+                                                {historicalMessages.length > 0 ? (
                                                         <>
-                                                            {messages.map((msg, index) => {
+                                                            {historicalMessages.map((msg, index) => {
                                                                 const isSelf = user && msg.creatorEmail === user.email;
                                                                 // 点击回复时把消息内容放入输入框
                                                                 const handleReply = () => {
                                                                     // 这里你可以选择只插入文本，也可以加上 @用户名
                                                                     // 使用 Markdown 引用语法，每行前加 >
                                                                     const originalText = msg.content.text;
-                                                                    const quotedText = ` ##### 引用自 @${msg.creatorName}\n` +
+                                                                    const quotedText = ` ##### 引用自 @${msg.creator}\n` +
                                                                             originalText.split('\n').map(line => `> ${line}`).join('\n');
                                                                     setMessage(prev => prev ? prev + '\n' + quotedText + '\n\n\u200b' : quotedText + '\n\n\u200b');
                                                                 };
                                                                 return (
                                                                         <div key={index}
-                                                                             className={`flex items-stretch mb-4 ${isSelf ? 'justify-end' : ''} animate-in fade-in duration-300 ${styles.hover}`}>
+                                                                             className={`flex items-stretch mb-4 ${isSelf ? 'justify-end' : ''} animate-in fade-in duration-300 message-item`}>
                                                                             {!isSelf && (
                                                                                     <Avatar
                                                                                             src={msg.createAvatar}
@@ -251,9 +280,9 @@ const ChatRoom = observer(() => {
 
                                                                             </div>
 
-                                                                            <div className={`${styles.reply_box}`}>
+                                                                            <div className="flex items-center">
                                                                                 <div
-                                                                                        className={`flex ${!isSelf ? styles.reply : styles.none}`}
+                                                                                        className={`flex ${!isSelf && 'reply'} hidden`}
                                                                                         onClick={handleReply}>
                                                                                     💬
                                                                                 </div>

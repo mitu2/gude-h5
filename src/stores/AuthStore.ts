@@ -1,7 +1,7 @@
 'use client';
 
 import {makeAutoObservable} from 'mobx';
-import {getLocalStorageItem, removeLocalStorageItem, setLocalStorageItem} from "@/utils/localStorages";
+import {getLocalStorageItem, removeLocalStorageItem, setLocalStorageItem} from "@/utils/localStorageUtils";
 import {User} from "@/types/ApiType";
 
 
