@@ -34,25 +34,37 @@ export default function Markdown(props: MarkdownProps) {
     const {children} = props;
 
     return (
-        <div className="markdown-body">
-            <ReactMarkdown
-                rehypePlugins={[rehypeRaw]}
-                remarkPlugins={[remarkGfm]}
-                components={{
-                    code({className, children, }) {
-                        const match = /language-(\w+)/.exec(className || "");
-                        return <Code color="default">
-                            <SyntaxHighlighter
-                                language={match ? match[1] : "txt"}
-                                PreTag='span'
-                                style={CStyle}
-                            >
-                                {String(children)}
-                            </SyntaxHighlighter>
-                        </Code>
-                    },
-                }}
-            >{children}</ReactMarkdown>
-        </div>
+            <div className="markdown-body">
+                <ReactMarkdown
+                        rehypePlugins={[rehypeRaw]}
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                            code({className, children,}) {
+                                const match = /language-(\w+)/.exec(className || "");
+                                return <Code color="default">
+                                    <SyntaxHighlighter
+                                            language={match ? match[1] : "txt"}
+                                            PreTag='span'
+                                            style={CStyle}
+                                    >
+                                        {String(children)}
+                                    </SyntaxHighlighter>
+                                </Code>
+                            },
+                            img({src, alt, title}) {
+                                // eslint-disable-next-line @next/next/no-img-element
+                                return <img
+                                        src={src || ''}
+                                        alt={alt || 'Image'}
+                                        title={title}
+                                        style={{
+                                            maxWidth: '300px',
+                                            maxHeight: '300px'
+                                        }}
+                                />
+                            }
+                        }}
+                >{children}</ReactMarkdown>
+            </div>
     )
 }
