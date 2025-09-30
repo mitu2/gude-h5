@@ -3,8 +3,8 @@
 import React, {useEffect, useState} from 'react';
 import SockJS from 'sockjs-client';
 import {Client, StompHeaders} from '@stomp/stompjs';
-import {Avatar, Button, Card, CardBody, Spinner} from '@heroui/react';
-import {MessageCircle, Send} from 'lucide-react';
+import {Button, Card, CardBody, Spinner} from '@heroui/react';
+import {Send} from 'lucide-react';
 import {observer} from 'mobx-react-lite';
 import {API_URL} from '@/utils/env';
 import {authStore} from '@/stores/AuthStore';
@@ -26,13 +26,11 @@ import {
 import {User as IUser} from "@/types/ApiType";
 import toast from "@/utils/notifications";
 import VditorEditor from "@/components/editor/VditorEditor";
-import Markdown from "@/components/editor/Markdown";
 import {UserApis} from "@/utils/apis";
-import {asShortName, getUserNameByMessage} from "@/utils/nameUtils";
 import AutoScroll from "@/components/AutoScroll";
-import {formatSimpleDate} from "@/utils/dateUtils";
 import * as stompUtils from "@/utils/stompUtils";
 import './page.css';
+import HistoricalMessages from "@/components/chat/HistoricalMessages";
 
 const ChatRoom = observer(() => {
     const [stompClient, setStompClient] = useState<Client | null>(null);
@@ -42,9 +40,8 @@ const ChatRoom = observer(() => {
     const [countUser, setCountUser] = useState<number>(0);
     const [onlineUsers, setOnlineUsers] = useState<IUser[]>([]);
     const [loading, setLoading] = useState(true);
-    const [previewSrc, setPreviewSrc] = useState<string | null>(null);
     const [loadingMoreMessage, setLoadingMoreMessage] = useState<boolean>(false);
-    const {user, isLoggedIn} = authStore;
+    const {isLoggedIn} = authStore;
 
     useEffect(() => {
         console.log('connecting...')
@@ -121,7 +118,6 @@ const ChatRoom = observer(() => {
                         switch (m.status) {
                             case UserChangeStatus.JOIN: {
                                 if (m.sessionId !== sessionId) {
-                                    console.log('1: ', m.sessionId, sessionId)
                                     setCountUser(i => i + 1)
                                 }
                                 break
@@ -203,6 +199,19 @@ const ChatRoom = observer(() => {
         }, 500)
     }
 
+    const handleReply = (message: PublicUserMessage) => {
+        const originalText = message.content.text;
+        const quotedText =
+                `##### 引用自 @${message.creator}
+                ${originalText
+                        .split('\n')
+                        .map(line => `> ${line}`)
+                        .join('\n')
+                }
+                `
+        setMessage(prev => prev ? prev + '\n' + quotedText + '\n\n\u200b' : quotedText + '\n\n\u200b');
+    };
+
     return (
             <div
                     className="flex flex-col overflow-hidden">
@@ -228,88 +237,8 @@ const ChatRoom = observer(() => {
                                                     loadingMore={true}
                                                     onScrollToTop={loadMoreMessage}
                                             >
-                                                {historicalMessages.length > 0 ? (
-                                                        <>
-                                                            {historicalMessages.map((msg, index) => {
-                                                                const isSelf = user && msg.creatorEmail === user.email;
-                                                                // 点击回复时把消息内容放入输入框
-                                                                const handleReply = () => {
-                                                                    // 这里你可以选择只插入文本，也可以加上 @用户名
-                                                                    // 使用 Markdown 引用语法，每行前加 >
-                                                                    const originalText = msg.content.text;
-                                                                    const quotedText = ` ##### 引用自 @${msg.creator}\n` +
-                                                                            originalText.split('\n').map(line => `> ${line}`).join('\n');
-                                                                    setMessage(prev => prev ? prev + '\n' + quotedText + '\n\n\u200b' : quotedText + '\n\n\u200b');
-                                                                };
-                                                                return (
-                                                                        <div key={index}
-                                                                             className={`flex items-stretch mb-4 ${isSelf ? 'justify-end' : ''} animate-in fade-in duration-300 message-item`}>
-                                                                            {!isSelf && (
-                                                                                    <Avatar
-                                                                                            src={msg.createAvatar}
-                                                                                            name={asShortName(msg.creatorName)}
-                                                                                            className="flex-shrink-0 mr-2"/>
-                                                                            )}
-                                                                            <div className="flex flex-col max-w-[70%]">
-                                                                                <div className="flex items-center">
-                                                                                    <div
-                                                                                            className={`text-sm font-semibold ${isSelf ? 'text-right text-primary-600' : 'text-gray-800'}`}>
-                                                                                        {isSelf ? '你' : getUserNameByMessage(msg)}
-                                                                                    </div>
-                                                                                    <div
-                                                                                            className={`text-xs text-gray-500 ml-2 whitespace-nowrap ${isSelf ? 'text-right' : ''}`}>
-                                                                                        {formatSimpleDate(msg.createDate)}
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div className={`flex items-center justify-left`}
-                                                                                     style={{position: 'revert'}}>
-                                                                                    <div
-                                                                                            className={`px-4 py-2 rounded-lg shadow break-words prose prose-sm`}
-                                                                                            style={{minWidth: '200px'}}
-                                                                                            onClick={(e) => {
-                                                                                                const target = e.target as HTMLElement;
-                                                                                                if (target.tagName === "IMG") {
-                                                                                                    setPreviewSrc((target as HTMLImageElement).src);
-                                                                                                }
-                                                                                            }}
-                                                                                    >
-                                                                                        <Markdown>{msg.content.text}</Markdown>
-                                                                                    </div>
-
-                                                                                </div>
-
-                                                                            </div>
-
-                                                                            <div className="flex items-center">
-                                                                                <div
-                                                                                        className={`flex ${!isSelf && 'reply'} hidden`}
-                                                                                        onClick={handleReply}>
-                                                                                    💬
-                                                                                </div>
-                                                                            </div>
-
-                                                                            {isSelf && (
-                                                                                    <Avatar
-                                                                                            src={msg.createAvatar}
-                                                                                            name={msg.creatorName}
-                                                                                            className="flex-shrink-0 ml-2"/>
-                                                                            )}
-                                                                        </div>
-                                                                );
-                                                            })}
-                                                        </>
-                                                ) : (
-                                                        <div className="flex-1 flex items-center justify-center flex-col">
-                                                            <div className="relative">
-                                                                <MessageCircle
-                                                                        className="w-20 h-20 text-gray-300 mb-6"/>
-                                                                <div
-                                                                        className="absolute inset-0 bg-primary/10 rounded-full blur-xl"></div>
-                                                            </div>
-                                                            <h3 className="text-xl font-semibold text-gray-700 mb-2">欢迎来到聊天室</h3>
-                                                            <p className="text-gray-500 text-center max-w-sm">还没有消息，发送第一条消息开始聊天吧！</p>
-                                                        </div>
-                                                )}
+                                                <HistoricalMessages messages={historicalMessages}
+                                                                    onReplyMessage={handleReply}/>
                                             </AutoScroll>
                                             <div
                                                     className="p-4 bg-gray-50/50 backdrop-blur-sm border-t border-gray-100 relative flex items-end">
@@ -360,18 +289,6 @@ const ChatRoom = observer(() => {
                         </CardBody>
                     </Card>
                 </div>
-                {previewSrc && (
-                        <div
-                                className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50"
-                                onClick={() => setPreviewSrc(null)}
-                        >
-                            <img
-                                    src={previewSrc}
-                                    alt="preview"
-                                    className="max-w-full max-h-full object-contain"
-                            />
-                        </div>
-                )}
             </div>
 
     );

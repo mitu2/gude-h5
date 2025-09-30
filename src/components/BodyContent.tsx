@@ -5,16 +5,17 @@ import {ReactNode} from 'react';
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import {ToastContainer} from "react-toastify";
+import Modal from "react-modal";
 
 interface BodyProps {
     children: ReactNode;
 }
 
 export default function BodyContent({children}: BodyProps) {
-
+    Modal.setAppElement('#app');
     return (
         <HeroUIProvider locale={'zh-CN'}>
-            <div style={{display: 'flex', flexDirection: 'column', minHeight: '100vh'}}>
+            <div style={{display: 'flex', flexDirection: 'column', minHeight: '100vh'}} id={'app'}>
                 <Navbar/>
                 <main style={{flex: 1}} className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
                     {children}

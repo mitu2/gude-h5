@@ -11,7 +11,6 @@ interface OnlineUserListProps {
 
 const OnlineUserList: React.FC<OnlineUserListProps> = ({ users, count }) => {
     const loginUserCount = users.length
-    console.log(count)
     return (
         <Card className="h-full flex flex-col backdrop-blur-sm bg-white/80 shadow-md border border-white/20">
             <CardHeader

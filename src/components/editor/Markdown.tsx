@@ -27,11 +27,13 @@ interface MarkdownProps {
      * Markdown.
      */
     children?: string | null | undefined;
+
+    onImgClick?: (src: string, alt?: string) => void;
 }
 
 export default function Markdown(props: MarkdownProps) {
 
-    const {children} = props;
+    const {children, onImgClick} = props;
 
     return (
             <div className="markdown-body">
@@ -61,6 +63,7 @@ export default function Markdown(props: MarkdownProps) {
                                             maxWidth: '300px',
                                             maxHeight: '300px'
                                         }}
+                                        onClick={() => onImgClick?.(src || '', alt)}
                                 />
                             }
                         }}
