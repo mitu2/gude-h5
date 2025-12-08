@@ -201,15 +201,8 @@ const ChatRoom = observer(() => {
 
     const handleReply = (message: PublicUserMessage) => {
         const originalText = message.content.text;
-        const quotedText =
-                `##### 引用自 @${message.creator}
-                ${originalText
-                        .split('\n')
-                        .map(line => `> ${line}`)
-                        .join('\n')
-                }
-                `
-        setMessage(prev => prev ? prev + '\n' + quotedText + '\n\n\u200b' : quotedText + '\n\n\u200b');
+        const quotedText = `##### 引用自 @${message.creator}\n> ${originalText.replaceAll(/\n/g, '\n> ')}`
+        setMessage(prev => prev ? prev + '\n' + quotedText: quotedText);
     };
 
     return (

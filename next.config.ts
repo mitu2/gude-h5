@@ -11,6 +11,10 @@ const nextConfig: NextConfig = {
         NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
     },
 
+    allowedDevOrigins: [
+        "*.*.*.*"
+    ],
+
     /* 静态资源优化 */
     images: {
         unoptimized: true,
@@ -21,7 +25,7 @@ const nextConfig: NextConfig = {
             "*.less": {
                 loaders: [
                     {
-                        loader: 'less-loader',
+                        loader: "less-loader",
                         options: {
                             lessOptions: {
                                 javascriptEnabled: true,
@@ -32,7 +36,7 @@ const nextConfig: NextConfig = {
                 as: "*.css"
             }
         }
-    }
+    },
 
     // /* 构建优化 */
     // eslint: {
