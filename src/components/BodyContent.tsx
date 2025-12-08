@@ -3,7 +3,6 @@
 import {HeroUIProvider} from '@heroui/react';
 import {ReactNode} from 'react';
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import {ToastContainer} from "react-toastify";
 import Modal from "react-modal";
 
@@ -20,7 +19,7 @@ export default function BodyContent({children}: BodyProps) {
                 <main style={{flex: 1}} className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
                     {children}
                 </main>
-                <Footer/>
+                {/*<Footer/>*/}
                 <ToastContainer
                     position="top-right"
                     autoClose={3000}

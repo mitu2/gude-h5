@@ -51,7 +51,7 @@ const Navbar = observer(() => {
 
 
     return (
-        <HeroNavbar isBordered maxWidth="xl" position="sticky"
+        <HeroNavbar isBordered maxWidth="xl" position="sticky" height={55}
                     className="bg-background/95 backdrop-blur-md border-b border-divider"
         >
             <NavbarContent justify="start">
